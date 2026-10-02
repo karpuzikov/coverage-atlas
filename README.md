@@ -81,16 +81,16 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.6
+**Version:** 0.1.7
 
-[Download Coverage Atlas Reasoning Lab 0.1.6.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.6.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.7.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/f36e23a415faff2608855e2fd24189d494cd64ed/Coverage%20Atlas%20Reasoning%20Lab%200.1.7.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
 - Import a test music folder.
 - Generate only meaningful comparison pairs: releases must share track identities or strong same-release evidence.
 - Show each meaningful pair at most once for the lifetime of that folder/session.
-- Choose Release A, Release B, or Skip.
+- Choose Release A, Release B, Keep Both, or Skip.
 - Optionally record the reason for each pairwise choice.
 - Add a persistent independent comment to either release, such as `Keep - contains unique song X`; the comment follows that release across later pairs and is saved even when the pair is skipped.
 - Reuse previous reasons/comments from a clickable saved-answer library; clicking inserts the saved text into the active field so it can be extended.
@@ -98,6 +98,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Save every answer immediately and resume the same session after closing or updating the app.
 - Log each presented pair, choice, reason, metadata snapshot, and comparison context.
 - Maintain a clean JSONL reasoning dataset suitable for iterative rule extraction.
+- Detect explicit snippet/excerpt/preview/callout labels in release-folder paths, not only in track titles; generic `Sampler` folders with full-length songs remain eligible.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
 - Keep all persistent data isolated under `Documents\Karpuzikov Tools\Coverage Atlas Reasoning Lab\`.
@@ -116,7 +117,7 @@ The Reasoning Lab is designed for repeated training rounds rather than exhaustiv
 7. Pairs confidently covered by the rules are automatically removed from the training queue.
 8. Only unresolved cases become the next comparison round.
 
-The rule pack is an ordered JSON rule list. Each rule contains an `id`, a safe boolean `when` expression, and `choose` set to `left`, `right`, or `skip`. The Lab logs every rule-covered and unresolved pair so later rule revisions can be based on evidence rather than guesses.
+The rule pack is an ordered JSON rule list. Each rule contains an `id`, a safe boolean `when` expression, and `choose` set to `left`, `right`, `both`, or `skip`. The Lab logs every rule-covered and unresolved pair so later rule revisions can be based on evidence rather than guesses.
 
 Previously entered pair reasons and per-release comments are collected into a clickable saved-answer library. Clicking an entry inserts it into whichever comment/reason field was active most recently, where it can then be edited or extended.
 
@@ -155,9 +156,9 @@ Use **Open files to send** to open that exact folder directly. Exporting a train
 
 The first rule pack was derived from 16 answered Avril Lavigne comparisons.
 
-[Download Coverage Atlas Selection Rules Round 1.json](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
+[Download Coverage Atlas Selection Rules Round 1 v1.2.0.json](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/69e65bb09a1ed3f285356039c80c732c6bbf7fc6/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
 
-Learned semantics in Reasoning Lab 0.1.5:
+Learned semantics in Reasoning Lab 0.1.7:
 
 - Live tracks do not count.
 - Snippets, excerpts, callout hooks, and similar promo fragments do not count.
@@ -167,16 +168,18 @@ Learned semantics in Reasoning Lab 0.1.5:
 - Exact artist/title matches are treated as the same song even when duration differs slightly.
 - A strict superset of valuable tracks wins.
 - If valuable coverage is identical, fewer total tracks/files wins.
-- Cases where both releases still contain different valuable content remain unresolved and are shown in the next training round.
+- Cases where both releases still contain different valuable content remain unresolved unless the active rule pack explicitly supports **Keep Both**.
+- A release explicitly labeled `Snippet`, `Excerpt`, `Preview`, `Callout`, or `Hook` is treated as promotional content even if its individual track titles omit that label.
 
 
 ### Keep Both decisions
 
-Reasoning Lab 0.1.6 adds **Keep Both** as a first-class training outcome.
+Reasoning Lab 0.1.7 preserves **Keep Both** as a first-class training outcome and corrects snippet-sampler classification.
 
 - Use **Keep Both** when Release A and Release B each contain valuable unique tracks.
 - This is not the same as **Skip**. Skip means no decision was supplied; Keep Both means both releases are required.
-- When both sides visibly contain valuable unique tracks, the Lab automatically records the motivation as a coverage decision.
+- When both sides visibly contain valuable unique tracks, and neither is a snippet/excerpt/preview/callout release, the Lab can automatically record the motivation as a coverage decision.
 - If the Lab cannot detect valuable unique tracks on both sides, it asks why both should be kept.
 - The session and JSONL dataset store both kept release IDs explicitly.
-- Selection-rule JSON files can now use `"choose": "both"` so future rounds can automatically resolve similar cases.
+- Selection-rule JSON files can use `"choose": "both"` so future rounds can automatically resolve similar cases.
+- Rule pack v1.2.0 requires Reasoning Lab 0.1.7 or newer because it uses the new `left_snippet_release` / `right_snippet_release` fields.
