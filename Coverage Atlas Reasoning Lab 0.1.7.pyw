@@ -650,6 +650,17 @@ def is_snippet_track(track: Track) -> bool:
     )
 
 
+def has_snippet_release_path_label(release: Release) -> bool:
+    for track in release.tracks:
+        path_parts = re.split(r'[\\/]+', track.relative_path or track.path or '')
+        if any(
+            SNIPPET_TITLE_RE.search(part)
+            for part in path_parts[:-1]
+        ):
+            return True
+    return False
+
+
 def is_featured_track(track: Track) -> bool:
     title = track.title or ''
     artist = track.artist or ''
@@ -1057,6 +1068,8 @@ def rule_context(left: Release, right: Release) -> dict:
         'left_unique_valuable': len(left_only_valuable_ids),
         'right_unique_valuable': len(right_only_valuable_ids),
         'same_valuable_coverage': left_valuable_ids == right_valuable_ids,
+        'left_snippet_release': has_snippet_release_path_label(left),
+        'right_snippet_release': has_snippet_release_path_label(right),
         'left_ignored_count': ignored_track_count(left),
         'right_ignored_count': ignored_track_count(right),
         'left_ignored_live': ignored_track_count(left, 'ignored_live'),
@@ -1165,6 +1178,8 @@ class SelectionRulePack:
                 'left_unique_valuable': 0,
                 'right_unique_valuable': 0,
                 'same_valuable_coverage': False,
+                'left_snippet_release': False,
+                'right_snippet_release': False,
                 'left_ignored_count': 0,
                 'right_ignored_count': 0,
                 'left_ignored_live': 0,
