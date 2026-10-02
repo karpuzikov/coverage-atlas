@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.6
+**Current version:** 0.1.7
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Download Coverage Atlas 0.1.6.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.6.pyw)
+[Download Coverage Atlas 0.1.7.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.7.pyw)
 
 ## Principles
 
