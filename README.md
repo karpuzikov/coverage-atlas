@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.2
+**Current version:** 0.1.3
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Download Coverage Atlas 0.1.2.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.2.pyw)
+[Download Coverage Atlas 0.1.3.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.3.pyw)
 
 ## Principles
 
@@ -27,6 +27,8 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Strong identity linking through MusicBrainz Recording IDs and ISRCs.
 - Correct decoding of binary/freeform tag values used by formats such as ALAC/M4A.
 - Safe metadata-to-identifier bridging when title, artist, and duration identify exactly one strong match.
+- Punctuation/spacing-insensitive identity matching for equivalent metadata spellings.
+- Conservative release-alignment matching for near-identical editions using track position, duration, existing overlap, and title/version evidence.
 - Ambiguous identity matches remain separate and are logged.
 - Global release coverage optimization.
 - Exact optimization for tractable candidate sets.
