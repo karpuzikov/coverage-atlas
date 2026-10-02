@@ -81,9 +81,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.3
+**Version:** 0.1.4
 
-[Download Coverage Atlas Reasoning Lab 0.1.3.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.3.pyw)
+[Download Coverage Atlas Reasoning Lab 0.1.4.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.4.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -133,3 +133,19 @@ Reasoning Lab 0.1.3 is optimized for fast binary choices:
 - The ambiguity dialog shows the conflicting evidence, candidate explanations, and previously saved motivations/comments for one-click reuse.
 - Inferred motivations, confidence, categories, candidate evidence, and user clarifications are all written to the JSONL training dataset.
 - Existing answers from earlier versions remain part of the historical preference profile.
+
+
+### Files to send to ChatGPT
+
+You do not need to search through the app's data folders. Reasoning Lab maintains one flat handoff folder:
+
+`Documents\Karpuzikov Tools\Coverage Atlas Reasoning Lab\Files to Send ChatGPT\`
+
+It contains only the current files useful for analysis:
+
+- `Training Snapshot.jsonl`
+- `Reasoning Dataset.jsonl`
+- `Session State.json`
+- `Diagnostic Log.jsonl`
+
+Use **Open files to send** to open that exact folder directly. Exporting a training snapshot refreshes the folder automatically.
