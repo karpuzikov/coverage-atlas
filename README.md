@@ -81,9 +81,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.4
+**Version:** 0.1.5
 
-[Download Coverage Atlas Reasoning Lab 0.1.4.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.4.pyw)
+[Download Coverage Atlas Reasoning Lab 0.1.5.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.5.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -149,3 +149,22 @@ It contains only the current files useful for analysis:
 - `Diagnostic Log.jsonl`
 
 Use **Open files to send** to open that exact folder directly. Exporting a training snapshot refreshes the folder automatically.
+
+
+### Learned selection rules - Round 1
+
+The first rule pack was derived from 16 answered Avril Lavigne comparisons.
+
+[Download Coverage Atlas Selection Rules Round 1.json](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
+
+Learned semantics in Reasoning Lab 0.1.5:
+
+- Live tracks do not count.
+- Snippets, excerpts, callout hooks, and similar promo fragments do not count.
+- Ordinary remixes do not count.
+- Remixes with an additional featured artist count as unique content.
+- Versions and non-live acoustic variants count.
+- Exact artist/title matches are treated as the same song even when duration differs slightly.
+- A strict superset of valuable tracks wins.
+- If valuable coverage is identical, fewer total tracks/files wins.
+- Cases where both releases still contain different valuable content remain unresolved and are shown in the next training round.
