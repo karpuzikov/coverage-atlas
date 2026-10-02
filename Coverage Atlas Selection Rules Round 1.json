@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "name": "Coverage Atlas learned selection rules - round 1 (keep-both fix)",
-  "version": "1.1.0",
+  "name": "Coverage Atlas learned selection rules - round 1",
+  "version": "1.2.0",
   "training_session_id": "372fc9b32d0e-8db7c60a08ba49a0",
   "training_release_set_hash": "8db7c60a08ba49a0",
   "derived_from_answered_pairs": 16,
@@ -13,13 +13,14 @@
     "Versions and non-live acoustic variants count as songs/variants.",
     "The same artist/title is considered the same song even when duration differs slightly.",
     "Prefer a release whose valuable-track set strictly contains the other's.",
-    "If valuable coverage is identical, prefer the release with fewer total tracks/files."
+    "If valuable coverage is identical, prefer the release with fewer total tracks/files.",
+    "Tracks inside release folders explicitly labeled Snippet, Excerpt, Preview, Callout, or Hook are promotional fragments even when the individual track titles omit those labels. A generic Sampler folder alone does not imply snippets."
   ],
   "rules": [
     {
       "id": "keep_both_when_both_have_valuable_unique_tracks",
-      "description": "Both releases contain valuable tracks absent from the other, so retain both and do not ask the user to compare them.",
-      "when": "left_unique_valuable > 0 and right_unique_valuable > 0",
+      "description": "Keep both only when each release contributes valuable unique tracks and neither release is explicitly labeled as a snippet/excerpt/preview/callout release.",
+      "when": "left_unique_valuable > 0 and right_unique_valuable > 0 and not left_snippet_release and not right_snippet_release",
       "choose": "both"
     },
     {
@@ -46,5 +47,6 @@
       "when": "same_valuable_coverage and right_track_count < left_track_count",
       "choose": "right"
     }
-  ]
+  ],
+  "minimum_app_version": "0.1.7"
 }
