@@ -1,19 +1,20 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.10
+**Current version:** 0.1.11
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Download Coverage Atlas 0.1.10.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.10.pyw)
+[Update Coverage Atlas 0.1.11.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/fa2aab6460fbe408b2d9edf87853e5259a5fd40b/Coverage%20Atlas%200.1.11.pyw)
 
 ## Principles
 
 - Preserve wanted musical content first.
 - Minimize the number of releases.
 - Prefer known CD editions over WEB editions when musical coverage is otherwise equivalent.
+- When two CD rips provide identical track coverage and have the same file count, prefer the one with the higher Logchecker score.
 - Treat source/container folders separately from release folders.
 - Among equally small release sets, prefer fewer actual audio files.
 - Optimize the collection globally rather than comparing releases only in pairs.
@@ -51,6 +52,9 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Releases containing only ignored remix/live material become irrelevant automatically.
 - Remix tracks and live recordings are visible but excluded from coverage and optimization.
 - Explicit WEB/CD folder markers take precedence over incidental CUE/log files, and names such as `2CD` are recognized as CD evidence.
+- Run the official Logchecker locally on release `.log` files; cache results by file size and modification time.
+- Prefer higher Logchecker scores only after coverage, release-count, CD/WEB, and file-count priorities are tied.
+- Logchecker, PHP, and optional checksum-verification helpers are downloaded/installed locally as needed; rip logs are not uploaded to external services.
 - Multi-disc album names are normalized so `CD1` / `Disc 1` suffixes do not become the release title.
 - Organizational folders such as numbered `Remixes` or `Tracks` containers are not treated as one giant release; direct loose audio files are modeled individually.
 - Excluding the last provider of a track/version no longer makes that content disappear from the universe; lost content is explicitly reported.
@@ -72,6 +76,7 @@ Diagnostic logs are stored in:
 - Windows
 - Python with Tkinter
 - `mutagen` is installed automatically when missing
+- PHP 8.4 and Logchecker are provisioned automatically when CD rip logs need scoring
 
 ## Safety
 
@@ -81,9 +86,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.7
+**Version:** 0.1.8
 
-[Update Coverage Atlas Reasoning Lab 0.1.7.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/f36e23a415faff2608855e2fd24189d494cd64ed/Coverage%20Atlas%20Reasoning%20Lab%200.1.7.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.8.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/9e08deacd0660a1b36e172ffde24e4aa52371046/Coverage%20Atlas%20Reasoning%20Lab%200.1.8.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -99,6 +104,8 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Log each presented pair, choice, reason, metadata snapshot, and comparison context.
 - Maintain a clean JSONL reasoning dataset suitable for iterative rule extraction.
 - Detect explicit snippet/excerpt/preview/callout labels in release-folder paths, not only in track titles; generic `Sampler` folders with full-length songs remain eligible.
+- Score local CD rip logs with Logchecker and expose each release's score to the selection-rule engine.
+- Selection Rules v1.3.0 automatically choose the higher-scoring rip when both releases are CD rips with identical track identities and track counts.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
 - Keep all persistent data isolated under `Documents\Karpuzikov Tools\Coverage Atlas Reasoning Lab\`.
@@ -156,9 +163,9 @@ Use **Open files to send** to open that exact folder directly. Exporting a train
 
 The first rule pack was derived from 16 answered Avril Lavigne comparisons.
 
-[Download Coverage Atlas Selection Rules Round 1 v1.2.0.json](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/69e65bb09a1ed3f285356039c80c732c6bbf7fc6/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
+[Download Coverage Atlas Selection Rules Round 1 v1.3.0.json](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/2d0111ad1c83c61cddca226a75397613222dd055/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
 
-Learned semantics in Reasoning Lab 0.1.7:
+Learned semantics in Reasoning Lab 0.1.8:
 
 - Live tracks do not count.
 - Snippets, excerpts, callout hooks, and similar promo fragments do not count.
