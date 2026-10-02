@@ -81,9 +81,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.5
+**Version:** 0.1.6
 
-[Download Coverage Atlas Reasoning Lab 0.1.5.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.5.pyw)
+[Download Coverage Atlas Reasoning Lab 0.1.6.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.6.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -168,3 +168,15 @@ Learned semantics in Reasoning Lab 0.1.5:
 - A strict superset of valuable tracks wins.
 - If valuable coverage is identical, fewer total tracks/files wins.
 - Cases where both releases still contain different valuable content remain unresolved and are shown in the next training round.
+
+
+### Keep Both decisions
+
+Reasoning Lab 0.1.6 adds **Keep Both** as a first-class training outcome.
+
+- Use **Keep Both** when Release A and Release B each contain valuable unique tracks.
+- This is not the same as **Skip**. Skip means no decision was supplied; Keep Both means both releases are required.
+- When both sides visibly contain valuable unique tracks, the Lab automatically records the motivation as a coverage decision.
+- If the Lab cannot detect valuable unique tracks on both sides, it asks why both should be kept.
+- The session and JSONL dataset store both kept release IDs explicitly.
+- Selection-rule JSON files can now use `"choose": "both"` so future rounds can automatically resolve similar cases.
