@@ -101,3 +101,21 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
 - Keep all persistent data isolated under `Documents\Karpuzikov Tools\Coverage Atlas Reasoning Lab\`.
+
+
+### Iterative rule-gap workflow
+
+The Reasoning Lab is designed for repeated training rounds rather than exhaustive pair completion:
+
+1. Answer as many meaningful pairs as useful.
+2. Use **Finish round / export snapshot**.
+3. Derive a selection rule pack from that JSONL snapshot.
+4. Load the generated `selection_rules.json` with **Load selection rules**.
+5. Re-import the same test folder.
+6. Pairs already answered are never shown again.
+7. Pairs confidently covered by the rules are automatically removed from the training queue.
+8. Only unresolved cases become the next comparison round.
+
+The rule pack is an ordered JSON rule list. Each rule contains an `id`, a safe boolean `when` expression, and `choose` set to `left`, `right`, or `skip`. The Lab logs every rule-covered and unresolved pair so later rule revisions can be based on evidence rather than guesses.
+
+Previously entered pair reasons and per-release comments are collected into a clickable saved-answer library. Clicking an entry inserts it into whichever comment/reason field was active most recently, where it can then be edited or extended.
