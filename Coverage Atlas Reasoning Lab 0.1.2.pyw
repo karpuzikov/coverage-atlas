@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import sys
 import re
+import ast
 import json
 import math
 import time
@@ -47,6 +48,7 @@ SESSIONS = DATA / 'sessions'
 EXPORTS = DATA / 'exports'
 TEMP = DATA / 'temp'
 DEPS = DATA / 'dependencies'
+RULES_FILE = DATA / 'selection_rules.json'
 for folder in (LOGS, SESSIONS, EXPORTS, TEMP, DEPS):
     folder.mkdir(parents=True, exist_ok=True)
 
@@ -583,6 +585,181 @@ def build_meaningful_pairs(releases: dict[str, Release]) -> list[list[str]]:
     ]
 
 
+ALLOWED_RULE_AST = (
+    ast.Expression,
+    ast.BoolOp,
+    ast.BinOp,
+    ast.UnaryOp,
+    ast.Compare,
+    ast.Name,
+    ast.Load,
+    ast.Constant,
+    ast.List,
+    ast.Tuple,
+    ast.Set,
+    ast.And,
+    ast.Or,
+    ast.Not,
+    ast.Add,
+    ast.Sub,
+    ast.Mult,
+    ast.Div,
+    ast.Mod,
+    ast.USub,
+    ast.UAdd,
+    ast.Eq,
+    ast.NotEq,
+    ast.Lt,
+    ast.LtE,
+    ast.Gt,
+    ast.GtE,
+    ast.In,
+    ast.NotIn,
+    ast.Is,
+    ast.IsNot,
+)
+
+
+def release_lossless(release: Release) -> bool:
+    lossless = {'.flac', '.wav', '.ape', '.wv', '.tta', '.alac'}
+    return any(track.extension in lossless for track in release.tracks)
+
+
+def rule_context(left: Release, right: Release) -> dict:
+    compare = comparison_snapshot(left, right)
+    left_snap = left.feature_snapshot()
+    right_snap = right.feature_snapshot()
+
+    return {
+        'shared': compare['shared_identity_count'],
+        'left_unique': compare['left_only_identity_count'],
+        'right_unique': compare['right_only_identity_count'],
+        'left_track_count': compare['left_track_count'],
+        'right_track_count': compare['right_track_count'],
+        'left_duration': compare['left_total_duration_sec'],
+        'right_duration': compare['right_total_duration_sec'],
+        'left_media_type': left.media_type,
+        'right_media_type': right.media_type,
+        'left_disc_count': left_snap['disc_count'],
+        'right_disc_count': right_snap['disc_count'],
+        'left_size': left_snap['total_size_bytes'],
+        'right_size': right_snap['total_size_bytes'],
+        'left_avg_bitrate': left_snap['average_bitrate_kbps'],
+        'right_avg_bitrate': right_snap['average_bitrate_kbps'],
+        'left_lossless': release_lossless(left),
+        'right_lossless': release_lossless(right),
+        'left_has_barcode': bool(left.barcode),
+        'right_has_barcode': bool(right.barcode),
+        'left_has_mbrel': bool(left.mbrel),
+        'right_has_mbrel': bool(right.mbrel),
+        'same_barcode': compare['same_barcode'],
+        'same_musicbrainz_release_id': compare['same_musicbrainz_release_id'],
+        'left_source': left.source_container,
+        'right_source': right.source_container,
+        'left_name': left.name,
+        'right_name': right.name,
+        'left_date': left.date,
+        'right_date': right.date,
+    }
+
+
+def safe_rule_expression(expression: str, context: dict) -> bool:
+    tree = ast.parse(expression, mode='eval')
+    for node in ast.walk(tree):
+        if not isinstance(node, ALLOWED_RULE_AST):
+            raise ValueError(f'Unsupported rule expression element: {type(node).__name__}')
+        if isinstance(node, ast.Name) and node.id not in context:
+            raise ValueError(f'Unknown rule field: {node.id}')
+    return bool(eval(
+        compile(tree, '<selection-rule>', 'eval'),
+        {'__builtins__': {}},
+        dict(context),
+    ))
+
+
+class SelectionRulePack:
+    def __init__(self, data: dict, source_path: Path):
+        self.data = data
+        self.source_path = source_path
+        self.name = str(data.get('name') or source_path.stem)
+        self.version = str(data.get('version') or '1')
+        self.rules = list(data.get('rules') or [])
+        raw = json.dumps(data, ensure_ascii=False, sort_keys=True).encode('utf-8')
+        self.hash = hashlib.sha1(raw).hexdigest()[:16]
+
+    @classmethod
+    def load(cls, path: Path):
+        data = json.loads(path.read_text('utf-8'))
+        if not isinstance(data, dict):
+            raise ValueError('Selection rules file must contain a JSON object.')
+        rules = data.get('rules')
+        if not isinstance(rules, list):
+            raise ValueError('Selection rules file must contain a "rules" array.')
+
+        for index, rule in enumerate(rules, 1):
+            if not isinstance(rule, dict):
+                raise ValueError(f'Rule {index} is not an object.')
+            expression = str(rule.get('when') or '').strip()
+            choose = str(rule.get('choose') or '').strip().lower()
+            if not expression:
+                raise ValueError(f'Rule {index} has no "when" expression.')
+            if choose not in {'left', 'right', 'skip'}:
+                raise ValueError(
+                    f'Rule {index} has invalid "choose": {choose!r}. '
+                    'Use left, right, or skip.'
+                )
+            # Parse and validate against a broad dummy context at load time.
+            dummy = {
+                'shared': 0,
+                'left_unique': 0,
+                'right_unique': 0,
+                'left_track_count': 0,
+                'right_track_count': 0,
+                'left_duration': 0.0,
+                'right_duration': 0.0,
+                'left_media_type': '',
+                'right_media_type': '',
+                'left_disc_count': 0,
+                'right_disc_count': 0,
+                'left_size': 0,
+                'right_size': 0,
+                'left_avg_bitrate': 0.0,
+                'right_avg_bitrate': 0.0,
+                'left_lossless': False,
+                'right_lossless': False,
+                'left_has_barcode': False,
+                'right_has_barcode': False,
+                'left_has_mbrel': False,
+                'right_has_mbrel': False,
+                'same_barcode': False,
+                'same_musicbrainz_release_id': False,
+                'left_source': '',
+                'right_source': '',
+                'left_name': '',
+                'right_name': '',
+                'left_date': '',
+                'right_date': '',
+            }
+            safe_rule_expression(expression, dummy)
+
+        return cls(data, path)
+
+    def evaluate(self, left: Release, right: Release):
+        context = rule_context(left, right)
+        for index, rule in enumerate(self.rules, 1):
+            expression = str(rule.get('when') or '').strip()
+            if safe_rule_expression(expression, context):
+                return {
+                    'rule_index': index,
+                    'rule_id': str(rule.get('id') or f'rule_{index}'),
+                    'description': str(rule.get('description') or ''),
+                    'when': expression,
+                    'choice': str(rule.get('choose')).lower(),
+                    'context': context,
+                }
+        return None
+
+
 class Session:
     def __init__(self, root: Path, releases: dict[str, Release]):
         self.root = root
@@ -784,6 +961,85 @@ class Session:
     def answered_count(self) -> int:
         return len(self.answers)
 
+    def apply_rule_pack(self, rule_pack: SelectionRulePack):
+        all_pairs = build_meaningful_pairs(self.releases)
+        unresolved = []
+        covered = {}
+        previously_answered = 0
+
+        for left_id, right_id in all_pairs:
+            pid = pair_id(left_id, right_id)
+
+            if pid in self.answers:
+                previously_answered += 1
+                continue
+
+            left = self.releases[left_id]
+            right = self.releases[right_id]
+            evaluation = rule_pack.evaluate(left, right)
+
+            if evaluation and evaluation['choice'] in {'left', 'right'}:
+                covered[pid] = {
+                    'pair_id': pid,
+                    'left_release_id': left_id,
+                    'right_release_id': right_id,
+                    'rule_id': evaluation['rule_id'],
+                    'rule_index': evaluation['rule_index'],
+                    'description': evaluation['description'],
+                    'when': evaluation['when'],
+                    'choice': evaluation['choice'],
+                    'context': evaluation['context'],
+                }
+            else:
+                unresolved.append([left_id, right_id])
+
+        seed_text = f'{self.session_id}|{rule_pack.hash}|{len(self.data.get("rounds", []))}'
+        seed = int(hashlib.sha1(seed_text.encode('utf-8')).hexdigest()[:12], 16)
+        rng = random.Random(seed)
+        rng.shuffle(unresolved)
+        for pair in unresolved:
+            if rng.random() < 0.5:
+                pair.reverse()
+
+        self.data['pairs'] = unresolved
+        self.data['rule_evaluations'] = covered
+        self.data['active_rule_pack'] = {
+            'name': rule_pack.name,
+            'version': rule_pack.version,
+            'hash': rule_pack.hash,
+            'source_path': str(rule_pack.source_path),
+            'rule_count': len(rule_pack.rules),
+        }
+        self.data.setdefault('rounds', []).append({
+            'type': 'rule_gap_training',
+            'started_at': time.strftime('%Y-%m-%dT%H:%M:%S'),
+            'rule_pack': self.data['active_rule_pack'],
+            'meaningful_pair_count': len(all_pairs),
+            'previously_answered_count': previously_answered,
+            'rule_covered_count': len(covered),
+            'unresolved_pair_count': len(unresolved),
+        })
+
+        self.save()
+        self._rewrite_dataset()
+
+        LOG.event(
+            'selection_rules_applied',
+            session_id=self.session_id,
+            rule_pack=self.data['active_rule_pack'],
+            meaningful_pair_count=len(all_pairs),
+            previously_answered_count=previously_answered,
+            rule_covered_count=len(covered),
+            unresolved_pair_count=len(unresolved),
+        )
+
+        return {
+            'meaningful': len(all_pairs),
+            'answered': previously_answered,
+            'covered': len(covered),
+            'unresolved': len(unresolved),
+        }
+
     def next_pair(self):
         for left, right in self.data.get('pairs', []):
             pid = pair_id(left, right)
@@ -872,9 +1128,12 @@ class Session:
                         'release': self.releases[release_id].feature_snapshot(),
                     }, ensure_ascii=False) + '\n')
 
-                for left, right in self.data.get('pairs', []):
-                    pid = pair_id(left, right)
-                    answer = self.answers.get(pid)
+                for evaluation in self.data.get('rule_evaluations', {}).values():
+                    row = {'record_type': 'rule_evaluation'}
+                    row.update(evaluation)
+                    fh.write(json.dumps(row, ensure_ascii=False) + '\n')
+
+                for answer in self.answers.values():
                     if answer:
                         row = {'record_type': 'comparison'}
                         row.update(answer)
@@ -938,6 +1197,12 @@ class App(tk.Tk):
             state='disabled',
         )
         self.snapshot_button.pack(side='right', padx=(0, 8))
+        self.rules_button = ttk.Button(
+            top,
+            text='Load selection rules',
+            command=self.load_selection_rules,
+        )
+        self.rules_button.pack(side='right', padx=(0, 8))
         ttk.Button(top, text='Import test folder', command=self.choose_folder).pack(side='right', padx=(0, 8))
 
         info = ttk.Frame(self)
@@ -946,6 +1211,8 @@ class App(tk.Tk):
         self.folder_label.pack(side='left')
         self.progress_label = ttk.Label(info, text='0 / 0 pairs')
         self.progress_label.pack(side='right')
+        self.rules_label = ttk.Label(info, text='No selection rules loaded')
+        self.rules_label.pack(side='right', padx=(0, 18))
 
         body = ttk.Panedwindow(self, orient='horizontal')
         body.pack(fill='both', expand=True, padx=14, pady=(0, 10))
@@ -1156,9 +1423,32 @@ class App(tk.Tk):
         self.snapshot_button.config(state='normal')
         self.dataset_label.config(text=f'Dataset: {self.session.dataset_path.name}')
         self.refresh_answer_library()
-        self.status.config(
-            text=f'{len(releases):,} releases loaded - {self.session.total_pairs:,} unique pairs'
-        )
+
+        if RULES_FILE.exists():
+            try:
+                rule_pack = SelectionRulePack.load(RULES_FILE)
+                stats = self.session.apply_rule_pack(rule_pack)
+                self.rules_label.config(
+                    text=f'Rules: {rule_pack.name} ({stats["covered"]} covered / {stats["unresolved"]} unresolved)'
+                )
+                self.status.config(
+                    text=(
+                        f'{len(releases):,} releases loaded - '
+                        f'{stats["unresolved"]:,} unresolved meaningful pairs'
+                    )
+                )
+            except Exception as exc:
+                LOG.error('selection_rules_auto_load_error', exc, rules_path=str(RULES_FILE))
+                self.rules_label.config(text='Selection rules failed to load')
+                self.status.config(
+                    text=f'{len(releases):,} releases loaded - rules file could not be applied'
+                )
+        else:
+            self.rules_label.config(text='No selection rules loaded')
+            self.status.config(
+                text=f'{len(releases):,} releases loaded - {self.session.total_pairs:,} meaningful pairs'
+            )
+
         self.show_next_pair()
 
     def set_text_target(self, widget):
@@ -1208,6 +1498,52 @@ class App(tk.Tk):
             self.queue_release_note_save('left')
         elif target is self.right_note:
             self.queue_release_note_save('right')
+
+    def load_selection_rules(self):
+        source = filedialog.askopenfilename(
+            title='Select Coverage Atlas selection rules',
+            filetypes=[
+                ('JSON selection rules', '*.json'),
+                ('All files', '*.*'),
+            ],
+        )
+        if not source:
+            return
+
+        try:
+            rule_pack = SelectionRulePack.load(Path(source))
+            shutil.copy2(source, RULES_FILE)
+            rule_pack = SelectionRulePack.load(RULES_FILE)
+
+            if self.session:
+                self.save_current_release_notes()
+                stats = self.session.apply_rule_pack(rule_pack)
+                self.rules_label.config(
+                    text=f'Rules: {rule_pack.name} ({stats["covered"]} covered / {stats["unresolved"]} unresolved)'
+                )
+                self.refresh_answer_library()
+                self.show_next_pair()
+                messagebox.showinfo(
+                    APP,
+                    'Selection rules applied.\n\n'
+                    f'Meaningful pairs: {stats["meaningful"]}\n'
+                    f'Already answered: {stats["answered"]}\n'
+                    f'Covered by rules: {stats["covered"]}\n'
+                    f'Unresolved for the next round: {stats["unresolved"]}',
+                )
+            else:
+                self.rules_label.config(text=f'Rules: {rule_pack.name}')
+                messagebox.showinfo(
+                    APP,
+                    'Selection rules saved.\n\n'
+                    'Import the same test folder and only unresolved cases will be queued.',
+                )
+        except Exception as exc:
+            LOG.error('selection_rules_load_error', exc, source=str(source))
+            messagebox.showerror(
+                APP,
+                f'Could not load the selection rules:\n\n{exc}',
+            )
 
     def export_snapshot(self):
         if not self.session:
@@ -1348,7 +1684,7 @@ class App(tk.Tk):
             self.current = None
             self._clear_pair()
             self.status.config(
-                text='All meaningful release pairs in this round are complete. Export the snapshot so the next selection rules can be derived.'
+                text='No unresolved pairs remain in this round. Export the snapshot; the selection system currently covers every remaining meaningful case.'
             )
             LOG.event(
                 'session_complete',
