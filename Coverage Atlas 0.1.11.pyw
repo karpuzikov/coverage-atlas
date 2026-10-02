@@ -849,6 +849,22 @@ class Model:
                 if track.key and not track.ignored_reason
             }
 
+        logchecker_scored = 0
+        for release in self.releases.values():
+            if release.kind != 'RELEASE':
+                continue
+            release.logchecker_score, release.logchecker_logs = score_release_logs(release.folder)
+            if release.logchecker_logs:
+                logchecker_scored += int(release.logchecker_score is not None)
+                LOG.event(
+                    'release_logchecker_summary',
+                    release_id=release.rid,
+                    release=release.name,
+                    score=release.logchecker_score,
+                    log_count=len(release.logchecker_logs),
+                    logs=release.logchecker_logs,
+                )
+
         for rid, release in sorted(groups.items()):
             try:
                 relfolder = str(Path(release.folder).relative_to(rootp))
@@ -874,6 +890,8 @@ class Model:
                     track.ignored_reason for track in release.tracks if track.ignored_reason
                 )),
                 distinct_identity_count=len(release.keys),
+                logchecker_score=release.logchecker_score,
+                logchecker_log_count=len(release.logchecker_logs),
             )
 
         source_counts = Counter(track.identity_source for track in all_tracks if not track.ignored_reason)
@@ -890,6 +908,7 @@ class Model:
             ignored_track_reasons=dict(ignored_counts),
             release_media_types=dict(media_counts),
             source_containers=dict(container_counts),
+            logchecker_scored_release_count=logchecker_scored,
             elapsed_sec=round(time.perf_counter() - started, 4),
         )
         self.rebuild()
@@ -1351,8 +1370,13 @@ class Model:
     def objective(self, selected: set[str]):
         media_penalty = sum(self.media_rank(self.releases[rid].media_type) for rid in selected)
         file_count = sum(len(self.releases[rid].tracks) for rid in selected)
+        log_score_total = sum(
+            float(self.releases[rid].logchecker_score)
+            for rid in selected
+            if self.releases[rid].logchecker_score is not None
+        )
         stable = tuple(sorted((self.releases[rid].date, self.releases[rid].name, rid) for rid in selected))
-        return (len(selected), media_penalty, file_count, stable)
+        return (len(selected), media_penalty, file_count, -log_score_total, stable)
 
     def optimize(self):
         started = time.perf_counter()
@@ -1392,6 +1416,7 @@ class Model:
                     -len(release.keys & remaining),
                     self.media_rank(release.media_type),
                     len(release.tracks),
+                    -(float(release.logchecker_score) if release.logchecker_score is not None else 0.0),
                     len(release.keys),
                     release.date,
                     release.name,
@@ -1413,6 +1438,7 @@ class Model:
                 chosen_media_type=self.releases[rid].media_type,
                 chosen_media_penalty=self.media_rank(self.releases[rid].media_type),
                 chosen_file_count=len(self.releases[rid].tracks),
+                chosen_logchecker_score=self.releases[rid].logchecker_score,
                 remaining_after=len(remaining),
                 top_candidates=[
                     {
@@ -1422,6 +1448,7 @@ class Model:
                         'media_type': self.releases[cand].media_type,
                         'media_penalty': self.media_rank(self.releases[cand].media_type),
                         'file_count': len(self.releases[cand].tracks),
+                        'logchecker_score': self.releases[cand].logchecker_score,
                     }
                     for cand in candidates[:12]
                 ],
@@ -1435,6 +1462,7 @@ class Model:
                 key=lambda rid: (
                     -self.media_rank(self.releases[rid].media_type),
                     -len(self.releases[rid].tracks),
+                    (float(self.releases[rid].logchecker_score) if self.releases[rid].logchecker_score is not None else -1.0),
                     len(self.releases[rid].keys),
                     self.releases[rid].date,
                     self.releases[rid].name,
@@ -1550,6 +1578,7 @@ class Model:
                             -len(self.releases[rid].keys & uncovered),
                             self.media_rank(self.releases[rid].media_type),
                             len(self.releases[rid].tracks),
+                            -(float(self.releases[rid].logchecker_score) if self.releases[rid].logchecker_score is not None else 0.0),
                             self.releases[rid].date,
                             self.releases[rid].name,
                             rid,
@@ -1602,6 +1631,11 @@ class Model:
                     len(selected),
                     sum(self.media_rank(self.releases[rid].media_type) for rid in selected),
                     sum(len(self.releases[rid].tracks) for rid in selected),
+                    -sum(
+                        float(self.releases[rid].logchecker_score)
+                        for rid in selected
+                        if self.releases[rid].logchecker_score is not None
+                    ),
                 )
                 previous = memo.get(state)
                 if previous is not None and previous <= partial:
@@ -1632,6 +1666,7 @@ class Model:
                         -len(self.releases[rid].keys & missing),
                         self.media_rank(self.releases[rid].media_type),
                         len(self.releases[rid].tracks),
+                        -(float(self.releases[rid].logchecker_score) if self.releases[rid].logchecker_score is not None else 0.0),
                         self.releases[rid].date,
                         self.releases[rid].name,
                         rid,
@@ -1798,11 +1833,11 @@ class App(tk.Tk):
         pane.add(left, weight=3)
         pane.add(right, weight=2)
 
-        columns = ('status', 'date', 'release', 'media', 'source', 'tracks', 'unique', 'barcode')
+        columns = ('status', 'date', 'release', 'media', 'source', 'tracks', 'unique', 'log_score', 'barcode')
         self.tree = ttk.Treeview(left, columns=columns, show='headings')
         for column, width in (
             ('status', 100), ('date', 95), ('release', 330), ('media', 75), ('source', 95),
-            ('tracks', 65), ('unique', 70), ('barcode', 135)
+            ('tracks', 65), ('unique', 70), ('log_score', 85), ('barcode', 135)
         ):
             self.tree.heading(column, text=column.title())
             self.tree.column(column, width=width, anchor='w')
@@ -1896,7 +1931,9 @@ class App(tk.Tk):
                 iid=rid,
                 values=(
                     self.status_of(rid), release.date, release.name, release.media_type,
-                    release.source_container, len(release.tracks), unique, release.barcode
+                    release.source_container, len(release.tracks), unique,
+                    (f'{release.logchecker_score:g}' if release.logchecker_score is not None else '-'),
+                    release.barcode
                 ),
             )
 
@@ -1999,6 +2036,7 @@ class App(tk.Tk):
             f'Barcode: {release.barcode or "-"}\n'
             f'Source container: {release.source_container or "-"}\n'
             f'Media: {release.media_type} ({release.media_evidence})\n'
+            f'Logchecker score: {release.logchecker_score if release.logchecker_score is not None else ("unavailable" if release.logchecker_logs else "no rip log")}\n'
             f'Kind: {release.kind}\n'
             f'Folder: {release.folder}\n\n'
             f'{self.status_of(rid)}\n'
