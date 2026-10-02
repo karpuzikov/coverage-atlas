@@ -419,18 +419,22 @@ def analyze_logchecker_file(path: Path) -> dict:
         return {'path': str(path), 'score': None, 'checksum': None, 'details': [], 'error': str(exc)}
 
 
-def score_release_logs(folder: str) -> tuple[float | None, list[dict]]:
+def score_release_logs(folder: str, log_paths: list[Path] | None = None) -> tuple[float | None, list[dict]]:
     root = Path(folder)
     if not root.is_dir():
         return None, []
-    try:
-        logs = sorted(p for p in root.rglob('*.log') if p.is_file() and not p.name.casefold().startswith('logchecker'))
-    except Exception as exc:
-        LOG.error('logchecker_log_discovery_failed', exc, folder=folder)
+    if log_paths is None:
+        try:
+            log_paths = sorted(
+                p for p in root.rglob('*.log')
+                if p.is_file() and not p.name.casefold().startswith('logchecker')
+            )
+        except Exception as exc:
+            LOG.error('logchecker_log_discovery_failed', exc, folder=folder)
+            return None, []
+    if not log_paths:
         return None, []
-    if not logs:
-        return None, []
-    results = [analyze_logchecker_file(path) for path in logs]
+    results = [analyze_logchecker_file(path) for path in log_paths]
     scores = [float(row['score']) for row in results if row.get('score') is not None]
     return (round(sum(scores) / len(scores), 2) if scores else None), results
 
@@ -688,6 +692,22 @@ class Release:
     keys: set[str] = field(default_factory=set)
     logchecker_score: float | None = None
     logchecker_logs: list[dict] = field(default_factory=list)
+
+
+def logchecker_release_signature(release: Release) -> tuple:
+    entries = []
+    for track in release.tracks:
+        identity = track.key
+        if not identity:
+            mbid = clean_identifier(track.mbrec)
+            isrc = clean_identifier(track.isrc)
+            identity = (
+                'mb:' + mbid if mbid else
+                'isrc:' + isrc if isrc else
+                f'meta:{compact_text(track.artist)}:{compact_text(track.title)}'
+            )
+        entries.append((identity, int(round(track.duration)) if track.duration else 0))
+    return tuple(sorted(entries))
 
 
 class DSU:
