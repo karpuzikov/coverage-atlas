@@ -821,16 +821,12 @@ def infer_choice_motivation(
     combined_categories = [item['category'] for item in strong]
     combined_summary = ' '.join(item['summary'] for item in strong)
 
-    # Ask only when the choice contradicts a meaningful musical advantage on
-    # the other side, or when no clear explanation can be derived.
-    needs_user = bool(counter_evidence and not strong) or not candidates
+    # Ask whenever the other side also has non-remix content that the chosen
+    # side does not have. That is a real trade-off, so guessing motivation would
+    # be unsafe. Otherwise a strong one-directional explanation can be inferred.
+    needs_user = bool(other_wanted) or not candidates
 
-    # One strong explanation can absorb weak counter-evidence. Multiple strong
-    # explanations that reinforce one another are also safe to infer.
-    if strong and any(
-        item['category'] == 'wanted_track_coverage'
-        for item in strong
-    ):
+    if strong and not other_wanted:
         needs_user = False
 
     confidence = (
