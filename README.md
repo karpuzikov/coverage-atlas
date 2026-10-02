@@ -81,9 +81,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.2
+**Version:** 0.1.3
 
-[Download Coverage Atlas Reasoning Lab 0.1.2.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.2.pyw)
+[Download Coverage Atlas Reasoning Lab 0.1.3.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.3.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -119,3 +119,17 @@ The Reasoning Lab is designed for repeated training rounds rather than exhaustiv
 The rule pack is an ordered JSON rule list. Each rule contains an `id`, a safe boolean `when` expression, and `choose` set to `left`, `right`, or `skip`. The Lab logs every rule-covered and unresolved pair so later rule revisions can be based on evidence rather than guesses.
 
 Previously entered pair reasons and per-release comments are collected into a clickable saved-answer library. Clicking an entry inserts it into whichever comment/reason field was active most recently, where it can then be edited or extended.
+
+
+### Automatic motivation inference
+
+Reasoning Lab 0.1.3 is optimized for fast binary choices:
+
+- The normal workflow is now simply **Choose Release A** or **Choose Release B**.
+- Each choose button is centered directly below its respective release panel.
+- The Lab compares the chosen and rejected release and infers the likely motivation from measurable differences and the user's historical answers.
+- High-confidence cases are saved automatically with the inferred motivation.
+- If the choice contains a real trade-off or no clear explanation can be inferred, the Lab opens a targeted **What motivated this choice?** dialog.
+- The ambiguity dialog shows the conflicting evidence, candidate explanations, and previously saved motivations/comments for one-click reuse.
+- Inferred motivations, confidence, categories, candidate evidence, and user clarifications are all written to the JSONL training dataset.
+- Existing answers from earlier versions remain part of the historical preference profile.
