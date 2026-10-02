@@ -304,6 +304,29 @@ def logchecker_environment():
     return env
 
 
+def php_logchecker_options(php: str) -> list[str]:
+    try:
+        probe = subprocess.run(
+            [php, '-r', "exit(extension_loaded('iconv') ? 0 : 1);"],
+            capture_output=True, timeout=10,
+            creationflags=(0x08000000 if os.name == 'nt' else 0),
+        )
+        if probe.returncode == 0:
+            return []
+    except Exception:
+        pass
+    try:
+        php_root = Path(php).resolve().parent
+        extension_dir = php_root / 'ext'
+        if (extension_dir / 'php_iconv.dll').is_file():
+            LOG.event('logchecker_php_iconv_enable', extension_dir=str(extension_dir))
+            return ['-d', f'extension_dir={extension_dir}', '-d', 'extension=php_iconv.dll']
+    except Exception as exc:
+        LOG.error('logchecker_php_iconv_probe_failed', exc, php=php)
+    LOG.event('logchecker_php_iconv_unavailable', php=php)
+    return []
+
+
 def ensure_logchecker_runtime():
     global _LOGCHECKER_RUNTIME
     with _LOGCHECKER_LOCK:
@@ -317,7 +340,8 @@ def ensure_logchecker_runtime():
             _LOGCHECKER_RUNTIME = False
             return None
         _LOGCHECKER_RUNTIME = {
-            'php': php, 'phar': str(phar), 'version': version,
+            'php': php, 'php_options': php_logchecker_options(php),
+            'phar': str(phar), 'version': version,
             'env': logchecker_environment(),
         }
         return _LOGCHECKER_RUNTIME
@@ -351,7 +375,7 @@ def analyze_logchecker_file(path: Path) -> dict:
             json_out = DATA / 'temp' / f'logchecker-{token}.json'
             try:
                 completed = subprocess.run(
-                    [runtime['php'], runtime['phar'], 'analyze', '--no_text', str(path), str(html_out), str(json_out)],
+                    [runtime['php'], *runtime.get('php_options', []), runtime['phar'], 'analyze', '--no_text', str(path), str(html_out), str(json_out)],
                     capture_output=True, text=True, encoding='utf-8', errors='replace',
                     timeout=90, env=runtime['env'],
                     creationflags=(0x08000000 if os.name == 'nt' else 0),
