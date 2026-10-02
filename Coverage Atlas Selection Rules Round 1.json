@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "name": "Coverage Atlas learned selection rules - round 1",
+  "version": "1.0.0",
+  "training_session_id": "372fc9b32d0e-8db7c60a08ba49a0",
+  "training_release_set_hash": "8db7c60a08ba49a0",
+  "derived_from_answered_pairs": 16,
+  "learned_preferences": [
+    "Live tracks do not count toward coverage.",
+    "Snippets, excerpts, callout hooks, and similar promo fragments do not count.",
+    "Ordinary remixes do not count toward coverage.",
+    "A remix with an additional featured artist counts as unique content.",
+    "Versions and non-live acoustic variants count as songs/variants.",
+    "The same artist/title is considered the same song even when duration differs slightly.",
+    "Prefer a release whose valuable-track set strictly contains the other's.",
+    "If valuable coverage is identical, prefer the release with fewer total tracks/files."
+  ],
+  "rules": [
+    {
+      "id": "valuable_superset_left",
+      "description": "Left contains at least one valuable track absent from right, while right adds no valuable tracks.",
+      "when": "left_unique_valuable > 0 and right_unique_valuable == 0",
+      "choose": "left"
+    },
+    {
+      "id": "valuable_superset_right",
+      "description": "Right contains at least one valuable track absent from left, while left adds no valuable tracks.",
+      "when": "right_unique_valuable > 0 and left_unique_valuable == 0",
+      "choose": "right"
+    },
+    {
+      "id": "same_coverage_fewer_tracks_left",
+      "description": "Valuable coverage is identical; prefer fewer total tracks/files.",
+      "when": "same_valuable_coverage and left_track_count < right_track_count",
+      "choose": "left"
+    },
+    {
+      "id": "same_coverage_fewer_tracks_right",
+      "description": "Valuable coverage is identical; prefer fewer total tracks/files.",
+      "when": "same_valuable_coverage and right_track_count < left_track_count",
+      "choose": "right"
+    }
+  ]
+}
