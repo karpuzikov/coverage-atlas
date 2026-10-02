@@ -7,7 +7,7 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 
 ## Download
 
-[Update Coverage Atlas 0.1.11.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/d629eb6a0cbe85217711a98f24ebedda57a06758/Coverage%20Atlas%200.1.11.pyw)
+[Update Coverage Atlas 0.1.11.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/bc139456c03f5e6f4b1af016d2ab568f45674899/Coverage%20Atlas%200.1.11.pyw)
 
 ## Principles
 
@@ -88,7 +88,7 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 **Status:** Under construction ⚠️  
 **Version:** 0.1.8
 
-[Update Coverage Atlas Reasoning Lab 0.1.8.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/4e20763ea0f3e319614d69673c0e49f5a57da203/Coverage%20Atlas%20Reasoning%20Lab%200.1.8.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.8.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/9a6745ffc0ec6da5e29e1f974cdb58c78febfaca/Coverage%20Atlas%20Reasoning%20Lab%200.1.8.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
