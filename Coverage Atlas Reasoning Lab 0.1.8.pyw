@@ -2421,7 +2421,7 @@ class App(tk.Tk):
                 self.save_current_release_notes()
                 stats = self.session.apply_rule_pack(rule_pack)
                 self.rules_label.config(
-                    text=f'Rules: {rule_pack.name} ({stats["covered"]} covered / {stats["unresolved"]} unresolved)'
+                    text=f'Rules: {rule_pack.name} v{rule_pack.version} ({stats["covered"]} covered / {stats["unresolved"]} unresolved)'
                 )
                 self.refresh_answer_library()
                 self.show_next_pair()
