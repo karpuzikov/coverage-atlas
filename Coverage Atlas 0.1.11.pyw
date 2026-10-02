@@ -893,12 +893,36 @@ class Model:
                 if track.key and not track.ignored_reason
             }
 
-        logchecker_scored = 0
+        duplicate_rips = defaultdict(list)
         for release in self.releases.values():
-            if release.kind != 'RELEASE':
+            if release.kind == 'RELEASE' and release.media_type == 'CD' and release.tracks:
+                duplicate_rips[logchecker_release_signature(release)].append(release)
+
+        logchecker_scored = 0
+        logchecker_candidate_count = 0
+        for candidates in duplicate_rips.values():
+            if len(candidates) < 2:
                 continue
-            release.logchecker_score, release.logchecker_logs = score_release_logs(release.folder)
-            if release.logchecker_logs:
+            logs_by_release = {}
+            for release in candidates:
+                try:
+                    paths = sorted(
+                        p for p in Path(release.folder).rglob('*.log')
+                        if p.is_file() and not p.name.casefold().startswith('logchecker')
+                    )
+                except Exception as exc:
+                    LOG.error('logchecker_log_discovery_failed', exc, folder=release.folder)
+                    paths = []
+                if paths:
+                    logs_by_release[release.rid] = paths
+            if len(logs_by_release) < 2:
+                continue
+            logchecker_candidate_count += len(logs_by_release)
+            for release in candidates:
+                paths = logs_by_release.get(release.rid)
+                if not paths:
+                    continue
+                release.logchecker_score, release.logchecker_logs = score_release_logs(release.folder, paths)
                 logchecker_scored += int(release.logchecker_score is not None)
                 LOG.event(
                     'release_logchecker_summary',
