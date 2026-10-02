@@ -46,10 +46,11 @@ DATA = docs_dir() / 'Karpuzikov Tools' / APP
 LOGS = DATA / 'logs'
 SESSIONS = DATA / 'sessions'
 EXPORTS = DATA / 'exports'
+SHARE = DATA / 'Files to Send ChatGPT'
 TEMP = DATA / 'temp'
 DEPS = DATA / 'dependencies'
 RULES_FILE = DATA / 'selection_rules.json'
-for folder in (LOGS, SESSIONS, EXPORTS, TEMP, DEPS):
+for folder in (LOGS, SESSIONS, EXPORTS, SHARE, TEMP, DEPS):
     folder.mkdir(parents=True, exist_ok=True)
 
 if str(DEPS) not in sys.path:
@@ -1207,6 +1208,51 @@ class Session:
             ),
         )
 
+    def refresh_share_folder(self, snapshot_path: Path | None = None) -> Path:
+        SHARE.mkdir(parents=True, exist_ok=True)
+
+        targets = {
+            'Reasoning Dataset.jsonl': self.dataset_path,
+            'Session State.json': self.path,
+            'Diagnostic Log.jsonl': LOG.path,
+        }
+        if snapshot_path and snapshot_path.exists():
+            targets['Training Snapshot.jsonl'] = snapshot_path
+
+        for name in (
+            'Reasoning Dataset.jsonl',
+            'Session State.json',
+            'Diagnostic Log.jsonl',
+            'Training Snapshot.jsonl',
+        ):
+            target = SHARE / name
+            try:
+                if target.exists():
+                    target.unlink()
+            except Exception:
+                pass
+
+        for name, source in targets.items():
+            try:
+                source = Path(source)
+                if source.exists():
+                    shutil.copy2(source, SHARE / name)
+            except Exception as exc:
+                LOG.error(
+                    'share_file_copy_error',
+                    exc,
+                    source=str(source),
+                    destination=str(SHARE / name),
+                )
+
+        LOG.event(
+            'share_folder_refreshed',
+            session_id=self.session_id,
+            share_dir=str(SHARE),
+            files=sorted(path.name for path in SHARE.iterdir() if path.is_file()),
+        )
+        return SHARE
+
     def export_training_snapshot(self) -> Path:
         stamp = time.strftime('%Y-%m-%d-%H-%M-%S')
         path = EXPORTS / f'Coverage Atlas Training Snapshot {self.session_id} {stamp}.jsonl'
@@ -1222,6 +1268,8 @@ class Session:
             'snapshot_path': str(path),
         })
         self.save()
+        self._rewrite_dataset()
+        self.refresh_share_folder(path)
 
         LOG.event(
             'training_snapshot_exported',
@@ -1230,6 +1278,7 @@ class Session:
             round_answered_count=self.round_answered_count,
             round_pair_count=self.total_pairs,
             snapshot_path=str(path),
+            share_dir=str(SHARE),
         )
         return path
 
@@ -1492,7 +1541,7 @@ class App(tk.Tk):
         ttk.Label(top, text='Coverage Atlas Reasoning Lab', style='Title.TLabel').pack(side='left')
         ttk.Label(top, text=f'{VERSION} - {STATUS}').pack(side='left', padx=12)
 
-        ttk.Button(top, text='Open exported files', command=self.open_data_folder).pack(side='right')
+        ttk.Button(top, text='Open files to send', command=self.open_share_folder).pack(side='right')
         self.snapshot_button = ttk.Button(
             top,
             text='Finish round / export snapshot',
@@ -1851,8 +1900,8 @@ class App(tk.Tk):
             messagebox.showinfo(
                 APP,
                 'Training snapshot saved.\n\n'
-                f'{path}\n\n'
-                'You can stop here and send this JSONL to ChatGPT to build the next selection rules.',
+                'The exact files to send are now collected in:\n'
+                f'{SHARE}',
             )
         except Exception as exc:
             LOG.error('snapshot_export_error', exc)
@@ -2267,18 +2316,24 @@ class App(tk.Tk):
         self.refresh_answer_library()
         self.show_next_pair()
 
-    def open_data_folder(self):
+    def open_share_folder(self):
         try:
-            EXPORTS.mkdir(parents=True, exist_ok=True)
+            SHARE.mkdir(parents=True, exist_ok=True)
+
+            if self.session:
+                self.save_current_release_notes()
+                self.session._rewrite_dataset()
+                self.session.refresh_share_folder()
+
             if os.name == 'nt':
-                os.startfile(str(EXPORTS))
+                os.startfile(str(SHARE))
             elif sys.platform == 'darwin':
-                subprocess.Popen(['open', str(EXPORTS)])
+                subprocess.Popen(['open', str(SHARE)])
             else:
-                subprocess.Popen(['xdg-open', str(EXPORTS)])
+                subprocess.Popen(['xdg-open', str(SHARE)])
         except Exception as exc:
-            LOG.error('open_exports_folder_error', exc, exports_dir=str(EXPORTS))
-            messagebox.showerror(APP, f'Could not open the exported-files folder:\n\n{exc}')
+            LOG.error('open_share_folder_error', exc, share_dir=str(SHARE))
+            messagebox.showerror(APP, f'Could not open the files-to-send folder:\n\n{exc}')
 
     def report_callback_exception(self, exc, value, tb):
         LOG.event(
