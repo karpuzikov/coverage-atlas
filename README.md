@@ -76,3 +76,23 @@ Diagnostic logs are stored in:
 ## Safety
 
 Coverage Atlas analyzes the collection and produces recommendations. It does not delete, move, or modify music files.
+
+
+## Reasoning Lab addon
+
+**Status:** Under construction ⚠️  
+**Version:** 0.1.0
+
+[Download Coverage Atlas Reasoning Lab 0.1.0.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.0.pyw)
+
+The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
+
+- Import a test music folder.
+- Compare each unordered release pair exactly once.
+- Choose Release A, Release B, or Skip.
+- Optionally record the reason for each choice.
+- Save every answer immediately and resume the same session after closing.
+- Log each presented pair, choice, reason, metadata snapshot, and comparison context.
+- Maintain a clean JSONL reasoning dataset suitable for later rule extraction.
+- Never modify, move, or delete music.
+- Keep all persistent data isolated under `Documents\Karpuzikov Tools\Coverage Atlas Reasoning Lab\`.
