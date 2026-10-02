@@ -425,18 +425,22 @@ def analyze_logchecker_file(path: Path) -> dict:
         return {'path': str(path), 'score': None, 'checksum': None, 'details': [], 'error': str(exc)}
 
 
-def score_release_logs(folder: str) -> tuple[float | None, list[dict]]:
+def score_release_logs(folder: str, log_paths: list[Path] | None = None) -> tuple[float | None, list[dict]]:
     root = Path(folder)
     if not root.is_dir():
         return None, []
-    try:
-        logs = sorted(p for p in root.rglob('*.log') if p.is_file() and not p.name.casefold().startswith('logchecker'))
-    except Exception as exc:
-        LOG.error('logchecker_log_discovery_failed', exc, folder=folder)
+    if log_paths is None:
+        try:
+            log_paths = sorted(
+                p for p in root.rglob('*.log')
+                if p.is_file() and not p.name.casefold().startswith('logchecker')
+            )
+        except Exception as exc:
+            LOG.error('logchecker_log_discovery_failed', exc, folder=folder)
+            return None, []
+    if not log_paths:
         return None, []
-    if not logs:
-        return None, []
-    results = [analyze_logchecker_file(path) for path in logs]
+    results = [analyze_logchecker_file(path) for path in log_paths]
     scores = [float(row['score']) for row in results if row.get('score') is not None]
     return (round(sum(scores) / len(scores), 2) if scores else None), results
 
@@ -774,19 +778,7 @@ def scan_releases(root: Path, progress=lambda done, total: None) -> dict[str, Re
             )
         )
 
-    logchecker_scored = 0
-    for release in groups.values():
-        release.logchecker_score, release.logchecker_logs = score_release_logs(release.folder)
-        if release.logchecker_logs:
-            logchecker_scored += int(release.logchecker_score is not None)
-            LOG.event(
-                'release_logchecker_summary',
-                release_id=release.rid,
-                release=release.name,
-                score=release.logchecker_score,
-                log_count=len(release.logchecker_logs),
-                logs=release.logchecker_logs,
-            )
+    logchecker_scored, logchecker_candidates = score_duplicate_release_logs(groups.values())
 
     LOG.event(
         'scan_complete',
@@ -795,6 +787,7 @@ def scan_releases(root: Path, progress=lambda done, total: None) -> dict[str, Re
         audio_file_count=len(files),
         file_failures=failures,
         logchecker_scored_release_count=logchecker_scored,
+        logchecker_candidate_release_count=logchecker_candidates,
         releases=[release.feature_snapshot() for release in groups.values()],
     )
     return groups
@@ -912,6 +905,54 @@ def semantic_identity(track: Track) -> str:
     # data showed the same song differing by ~1 second between editions, which
     # must still be treated as the same recording for coverage comparison.
     return f'meta:{compact(track.artist)}:{compact(track.title)}'
+
+
+def score_duplicate_release_logs(releases):
+    groups = {}
+    for release in releases:
+        if release.media_type != 'CD' or not release.tracks:
+            continue
+        signature = tuple(sorted(
+            (semantic_identity(track), int(round(track.duration)) if track.duration else 0)
+            for track in release.tracks
+        ))
+        groups.setdefault(signature, []).append(release)
+
+    scored = 0
+    candidates_scored = 0
+    for group in groups.values():
+        if len(group) < 2:
+            continue
+        logs_by_release = {}
+        for release in group:
+            try:
+                paths = sorted(
+                    path for path in Path(release.folder).rglob('*.log')
+                    if path.is_file() and not path.name.casefold().startswith('logchecker')
+                )
+            except Exception as exc:
+                LOG.error('logchecker_log_discovery_failed', exc, folder=release.folder)
+                paths = []
+            if paths:
+                logs_by_release[release.rid] = paths
+        if len(logs_by_release) < 2:
+            continue
+        candidates_scored += len(logs_by_release)
+        for release in group:
+            paths = logs_by_release.get(release.rid)
+            if not paths:
+                continue
+            release.logchecker_score, release.logchecker_logs = score_release_logs(release.folder, paths)
+            scored += int(release.logchecker_score is not None)
+            LOG.event(
+                'release_logchecker_summary',
+                release_id=release.rid,
+                release=release.name,
+                score=release.logchecker_score,
+                log_count=len(release.logchecker_logs),
+                logs=release.logchecker_logs,
+            )
+    return scored, candidates_scored
 
 
 def is_remix_track(track: Track) -> bool:
