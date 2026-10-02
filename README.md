@@ -1,18 +1,20 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.4
+**Current version:** 0.1.5
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Download Coverage Atlas 0.1.4.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.4.pyw)
+[Download Coverage Atlas 0.1.5.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.5.pyw)
 
 ## Principles
 
 - Preserve wanted musical content first.
 - Minimize the number of releases.
+- Prefer known CD editions over WEB editions when musical coverage is otherwise equivalent.
+- Treat source/container folders separately from release folders.
 - Among equally small release sets, prefer fewer actual audio files.
 - Optimize the collection globally rather than comparing releases only in pairs.
 - Recalculate when a release is excluded or forced to stay.
@@ -24,6 +26,10 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 ## Current features
 
 - Recursive music-library scan.
+- Source/container detection for layouts such as `BT\\Deemix\\...` and `BT\\RED\\...`.
+- Multi-disc release grouping across `CD1`, `CD 1`, `Disc 1`, `Disk 1`, and equivalent folders.
+- Explicit `CD` / `WEB` / `UNKNOWN` release classification using folder markers, Deemix/Deezer source context, and CUE/rip-log evidence.
+- CD-preference optimization after coverage and release-count requirements are satisfied.
 - Strong identity linking through MusicBrainz Recording IDs and ISRCs.
 - Correct decoding of binary/freeform tag values used by formats such as ALAC/M4A.
 - Safe metadata-to-identifier bridging when title, artist, and duration identify exactly one strong match.
