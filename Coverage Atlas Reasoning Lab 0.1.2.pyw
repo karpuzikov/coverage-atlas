@@ -938,8 +938,9 @@ class Session:
         self.data.setdefault('rounds', []).append({
             'type': 'training_snapshot',
             'at': time.strftime('%Y-%m-%dT%H:%M:%S'),
-            'answered_count': self.answered_count,
-            'total_pairs': self.total_pairs,
+            'historical_answered_count': self.answered_count,
+            'round_answered_count': self.round_answered_count,
+            'round_pair_count': self.total_pairs,
             'snapshot_path': str(path),
         })
         self.save()
@@ -947,8 +948,9 @@ class Session:
         LOG.event(
             'training_snapshot_exported',
             session_id=self.session_id,
-            answered_count=self.answered_count,
-            total_pairs=self.total_pairs,
+            historical_answered_count=self.answered_count,
+            round_answered_count=self.round_answered_count,
+            round_pair_count=self.total_pairs,
             snapshot_path=str(path),
         )
         return path
@@ -960,6 +962,18 @@ class Session:
     @property
     def answered_count(self) -> int:
         return len(self.answers)
+
+    @property
+    def round_answered_count(self) -> int:
+        return sum(
+            1
+            for left, right in self.data.get('pairs', [])
+            if pair_id(left, right) in self.answers
+        )
+
+    @property
+    def remaining_pair_count(self) -> int:
+        return max(0, self.total_pairs - self.round_answered_count)
 
     def apply_rule_pack(self, rule_pack: SelectionRulePack):
         all_pairs = build_meaningful_pairs(self.releases)
@@ -978,7 +992,7 @@ class Session:
             right = self.releases[right_id]
             evaluation = rule_pack.evaluate(left, right)
 
-            if evaluation and evaluation['choice'] in {'left', 'right'}:
+            if evaluation and evaluation['choice'] in {'left', 'right', 'skip'}:
                 covered[pid] = {
                     'pair_id': pid,
                     'left_release_id': left_id,
@@ -1088,8 +1102,9 @@ class Session:
             'pair_answered',
             session_id=self.session_id,
             **row,
-            answered_count=self.answered_count,
-            total_pairs=self.total_pairs,
+            historical_answered_count=self.answered_count,
+            round_answered_count=self.round_answered_count,
+            round_pair_count=self.total_pairs,
         )
 
     def _rewrite_dataset(self):
@@ -1097,17 +1112,18 @@ class Session:
             with self.dataset_path.open('w', encoding='utf-8') as fh:
                 header = {
                     'record_type': 'session',
-                    'schema': 1,
+                    'schema': 3,
                     'app': APP,
                     'version': VERSION,
                     'session_id': self.session_id,
                     'root': str(self.root),
                     'release_set_hash': self.release_hash,
                     'release_count': len(self.releases),
-                    'total_pairs': self.total_pairs,
-                    'answered_count': self.answered_count,
+                    'round_pair_count': self.total_pairs,
+                    'round_answered_count': self.round_answered_count,
+                    'historical_answered_count': self.answered_count,
                     'pair_pool': 'meaningful_only',
-                    'unanswered_pair_count': self.total_pairs - self.answered_count,
+                    'unanswered_pair_count': self.remaining_pair_count,
                 }
                 fh.write(json.dumps(header, ensure_ascii=False) + '\n')
 
@@ -1677,7 +1693,7 @@ class App(tk.Tk):
 
         nxt = self.session.next_pair()
         self.progress_label.config(
-            text=f'{self.session.answered_count:,} / {self.session.total_pairs:,} meaningful pairs'
+            text=f'{self.session.round_answered_count:,} / {self.session.total_pairs:,} meaningful pairs'
         )
 
         if not nxt:
@@ -1689,7 +1705,8 @@ class App(tk.Tk):
             LOG.event(
                 'session_complete',
                 session_id=self.session.session_id,
-                total_pairs=self.session.total_pairs,
+                round_pair_count=self.session.total_pairs,
+                historical_answered_count=self.session.answered_count,
                 dataset_path=str(self.session.dataset_path),
             )
             return
