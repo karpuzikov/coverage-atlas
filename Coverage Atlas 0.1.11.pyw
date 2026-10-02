@@ -977,6 +977,7 @@ class Model:
             release_media_types=dict(media_counts),
             source_containers=dict(container_counts),
             logchecker_scored_release_count=logchecker_scored,
+            logchecker_candidate_release_count=logchecker_candidate_count,
             elapsed_sec=round(time.perf_counter() - started, 4),
         )
         self.rebuild()
