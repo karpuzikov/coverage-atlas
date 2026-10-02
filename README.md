@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.7
+**Current version:** 0.1.8
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Download Coverage Atlas 0.1.7.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.7.pyw)
+[Download Coverage Atlas 0.1.8.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.8.pyw)
 
 ## Principles
 
@@ -47,6 +47,12 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Irreplaceable-track highlighting.
 - Interactive related-release view.
 - Detailed JSONL diagnostic logging.
+- Explicit WEB/CD folder markers take precedence over incidental CUE/log files, and names such as `2CD` are recognized as CD evidence.
+- Multi-disc album names are normalized so `CD1` / `Disc 1` suffixes do not become the release title.
+- Organizational folders such as numbered `Remixes` or `Tracks` containers are not treated as one giant release; direct loose audio files are modeled individually.
+- Excluding the last provider of a track/version no longer makes that content disappear from the universe; lost content is explicitly reported.
+- MusicBrainz Recording IDs and ISRCs are conservatively reconciled when artist, title/version, and duration evidence agree.
+- Large collections are solved exactly by mandatory-release propagation and independent coverage components instead of a global release-count cutoff.
 
 ## Data isolation
 
