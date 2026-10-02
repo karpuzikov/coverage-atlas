@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "name": "Coverage Atlas learned selection rules - round 1",
-  "version": "1.0.0",
+  "name": "Coverage Atlas learned selection rules - round 1 (keep-both fix)",
+  "version": "1.1.0",
   "training_session_id": "372fc9b32d0e-8db7c60a08ba49a0",
   "training_release_set_hash": "8db7c60a08ba49a0",
   "derived_from_answered_pairs": 16,
@@ -16,6 +16,12 @@
     "If valuable coverage is identical, prefer the release with fewer total tracks/files."
   ],
   "rules": [
+    {
+      "id": "keep_both_when_both_have_valuable_unique_tracks",
+      "description": "Both releases contain valuable tracks absent from the other, so retain both and do not ask the user to compare them.",
+      "when": "left_unique_valuable > 0 and right_unique_valuable > 0",
+      "choose": "both"
+    },
     {
       "id": "valuable_superset_left",
       "description": "Left contains at least one valuable track absent from right, while right adds no valuable tracks.",
