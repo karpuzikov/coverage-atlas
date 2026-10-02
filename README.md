@@ -1,46 +1,49 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.1
+**Current version:** 0.1.2
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Download Coverage Atlas.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage_Atlas.pyw)
+[Download Coverage Atlas 0.1.2.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%200.1.2.pyw)
 
 ## Principles
 
 - Preserve wanted musical content first.
-- Minimize redundant releases.
+- Minimize the number of releases.
+- Among equally small release sets, prefer fewer actual audio files.
 - Optimize the collection globally rather than comparing releases only in pairs.
 - Recalculate when a release is excluded or forced to stay.
 - Show which tracks make a release necessary.
 - Highlight track versions that currently have no alternative provider.
-- Keep uncertain or incomplete cases visible instead of silently forcing a conclusion.
-- Never delete music as part of analysis.
+- Do not silently merge ambiguous track identities.
+- Never delete, move, or modify music during analysis.
 
 ## Current features
 
 - Recursive music-library scan.
-- Track/version identity using available MusicBrainz Recording IDs, ISRCs, or metadata fallback.
+- Strong identity linking through MusicBrainz Recording IDs and ISRCs.
+- Correct decoding of binary/freeform tag values used by formats such as ALAC/M4A.
+- Safe metadata-to-identifier bridging when title, artist, and duration identify exactly one strong match.
+- Ambiguous identity matches remain separate and are logged.
 - Global release coverage optimization.
-- Exact optimization for tractable candidate sets, with deterministic fallback behavior.
+- Exact optimization for tractable candidate sets.
+- File-count tie-breaking for equally small release plans.
 - Exclude release / Force keep / Clear decision.
 - Automatic re-optimization after decisions.
 - Release and track search.
 - Per-release explanations.
 - Irreplaceable-track highlighting.
 - Interactive related-release view.
-- Detailed JSONL diagnostic logging for improving matching and optimization behavior.
+- Detailed JSONL diagnostic logging.
 
 ## Data isolation
 
 All persistent app data is kept separately under:
 
 `Documents\Karpuzikov Tools\Coverage Atlas\`
-
-including logs, cache, temp data, and settings.
 
 Diagnostic logs are stored in:
 
