@@ -333,7 +333,7 @@ def analyze_logchecker_file(path: Path) -> dict:
             cache = {}
         old = cache.get(key, {})
         same_file = old.get('size') == stat.st_size and old.get('mtime_ns') == stat.st_mtime_ns
-        if same_file and old.get('score') is not None:
+        if same_file and old.get('score') is not None and time.time() - float(old.get('checked_at', 0) or 0) < 30 * 86400:
             return dict(old)
         if same_file and old.get('error') and time.time() - float(old.get('checked_at', 0) or 0) < 900:
             return dict(old)
