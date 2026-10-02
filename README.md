@@ -7,7 +7,7 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 
 ## Download
 
-[Update Coverage Atlas 0.1.11.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/bc139456c03f5e6f4b1af016d2ab568f45674899/Coverage%20Atlas%200.1.11.pyw)
+[Update Coverage Atlas 0.1.11.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/a77f66d16c3e586fb6e7d5f1068bb7c1e5959eda/Coverage%20Atlas%200.1.11.pyw)
 
 ## Principles
 
@@ -52,7 +52,7 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Releases containing only ignored remix/live material become irrelevant automatically.
 - Remix tracks and live recordings are visible but excluded from coverage and optimization.
 - Explicit WEB/CD folder markers take precedence over incidental CUE/log files, and names such as `2CD` are recognized as CD evidence.
-- Run the official Logchecker locally on release `.log` files; cache results by file size and modification time.
+- Run the official Logchecker locally only for otherwise-identical CD-rip candidates with logs; cache results by file size and modification time.
 - Prefer higher Logchecker scores only after coverage, release-count, CD/WEB, and file-count priorities are tied.
 - Logchecker, PHP, and optional checksum-verification helpers are downloaded/installed locally as needed; rip logs are not uploaded to external services.
 - Multi-disc album names are normalized so `CD1` / `Disc 1` suffixes do not become the release title.
@@ -88,7 +88,7 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 **Status:** Under construction ⚠️  
 **Version:** 0.1.8
 
-[Update Coverage Atlas Reasoning Lab 0.1.8.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/9a6745ffc0ec6da5e29e1f974cdb58c78febfaca/Coverage%20Atlas%20Reasoning%20Lab%200.1.8.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.8.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/ebd2cc3a7d1f9bae5b1c55fa5790ea14785035a9/Coverage%20Atlas%20Reasoning%20Lab%200.1.8.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -104,7 +104,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Log each presented pair, choice, reason, metadata snapshot, and comparison context.
 - Maintain a clean JSONL reasoning dataset suitable for iterative rule extraction.
 - Detect explicit snippet/excerpt/preview/callout labels in release-folder paths, not only in track titles; generic `Sampler` folders with full-length songs remain eligible.
-- Score local CD rip logs with Logchecker and expose each release's score to the selection-rule engine.
+- Score local CD rip logs with Logchecker only when at least two CD releases have the same track identities, track count, and rounded track durations; expose those scores to the selection-rule engine.
 - Selection Rules v1.3.0 automatically choose the higher-scoring rip when both releases are CD rips with identical track identities and track counts.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
