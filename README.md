@@ -81,16 +81,17 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.0
+**Version:** 0.1.1
 
-[Download Coverage Atlas Reasoning Lab 0.1.0.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.0.pyw)
+[Download Coverage Atlas Reasoning Lab 0.1.1.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/main/Coverage%20Atlas%20Reasoning%20Lab%200.1.1.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
 - Import a test music folder.
 - Compare each unordered release pair exactly once.
 - Choose Release A, Release B, or Skip.
-- Optionally record the reason for each choice.
+- Optionally record the reason for each pairwise choice.
+- Add a persistent independent comment to either release, such as `Keep - contains unique song X`; the comment follows that release across later pairs and is saved even when the pair is skipped.
 - Save every answer immediately and resume the same session after closing.
 - Log each presented pair, choice, reason, metadata snapshot, and comparison context.
 - Maintain a clean JSONL reasoning dataset suitable for later rule extraction.
