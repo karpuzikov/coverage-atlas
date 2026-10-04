@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.11
+**Current version:** 0.1.12
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Update Coverage Atlas 0.1.11.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/a77f66d16c3e586fb6e7d5f1068bb7c1e5959eda/Coverage%20Atlas%200.1.11.pyw)
+[Update Coverage Atlas 0.1.12.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/a59b72d0017ea2160202e3d8ff47a8aae0ca0976/Coverage%20Atlas%200.1.12.pyw)
 
 ## Principles
 
@@ -52,9 +52,9 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Releases containing only ignored remix/live material become irrelevant automatically.
 - Remix tracks and live recordings are visible but excluded from coverage and optimization.
 - Explicit WEB/CD folder markers take precedence over incidental CUE/log files, and names such as `2CD` are recognized as CD evidence.
-- Run the official Logchecker locally only for otherwise-identical CD-rip candidates with logs; cache results by file size and modification time.
+- Score every discovered EAC/XLD rip log locally with `ligh7s/hey-bro-check-log`; cache results by file size and modification time.
 - Prefer higher Logchecker scores only after coverage, release-count, CD/WEB, and file-count priorities are tied.
-- Uses [OPSnet/Logchecker](https://github.com/OPSnet/Logchecker); Logchecker, PHP, and optional checksum-verification helpers are downloaded/installed locally as needed. Rip logs are not uploaded to external services.
+- Uses [ligh7s/hey-bro-check-log](https://github.com/ligh7s/hey-bro-check-log) directly in Python; PHP is no longer required. Rip logs are not uploaded to external services.
 - Multi-disc album names are normalized so `CD1` / `Disc 1` suffixes do not become the release title.
 - Organizational folders such as numbered `Remixes` or `Tracks` containers are not treated as one giant release; direct loose audio files are modeled individually.
 - Excluding the last provider of a track/version no longer makes that content disappear from the universe; lost content is explicitly reported.
@@ -76,7 +76,7 @@ Diagnostic logs are stored in:
 - Windows
 - Python with Tkinter
 - `mutagen` is installed automatically when missing
-- PHP 8.4 and Logchecker are provisioned automatically when CD rip logs need scoring
+- `ligh7s/hey-bro-check-log` is installed automatically into Coverage Atlas' isolated dependency folder when rip logs need scoring
 
 ## Safety
 
@@ -86,9 +86,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.10
+**Version:** 0.1.11
 
-[Update Coverage Atlas Reasoning Lab 0.1.10.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/b1ad617c4d23b38c014ebb9c16ba0735bc355a6f/Coverage%20Atlas%20Reasoning%20Lab%200.1.10.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.11.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/5a67e75d3bfb022b3980c437ffc36b0d90e87198/Coverage%20Atlas%20Reasoning%20Lab%200.1.11.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -104,10 +104,11 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Log each presented pair, choice, reason, metadata snapshot, and comparison context.
 - Maintain a clean JSONL reasoning dataset suitable for iterative rule extraction.
 - Detect explicit snippet/excerpt/preview/callout labels in release-folder paths, not only in track titles; generic `Sampler` folders with full-length songs remain eligible.
-- Score local CD rip logs with Logchecker only when at least two CD releases have the same track identities, track count, and rounded track durations; expose those scores to the selection-rule engine.
+- Detect and score rip logs for every compared release, even before a pair is known to be an exact duplicate; expose those scores to the selection-rule engine.
 - Selection Rules v1.3.0 automatically choose the higher-scoring rip when both releases are CD rips with identical track identities and track counts.
 - Selection Rules v1.3.1 fixes validation of the Logchecker score fields when loading the rule pack.
 - Each compared release now has a folder button next to its path for opening the exact release folder in Explorer.
+- Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
 - Keep all persistent data isolated under `Documents\Karpuzikov Tools\Coverage Atlas Reasoning Lab\`.
