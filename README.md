@@ -86,9 +86,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.14
+**Version:** 0.1.15
 
-[Update Coverage Atlas Reasoning Lab 0.1.14.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/dc72ee2a713929dff0b026e306ec4698e13ace5b/Coverage%20Atlas%20Reasoning%20Lab%200.1.14.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.15.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/4250d7bc2db61153b4584b98b947d913a3587d2d/Coverage%20Atlas%20Reasoning%20Lab%200.1.15.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -111,6 +111,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Remember the last selected test-folder path and selection-rules file path across Reasoning Lab updates, and reopen future file pickers at those locations.
 - Suppress transient Windows console windows from dependency setup; logchecker provisioning happens before folder scanning.
 - If hey-bro-check-log rejects a clearly supported XLD log, clean-reinstall and retry the checker once; show the exact checker/parser error instead of the generic `unrecognized` label.
+- Install hey-bro-check-log from its pinned GitHub source archive directly instead of installing the old project through pip/Poetry; this avoids modern pip build failures.
 - Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
