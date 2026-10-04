@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.15
+**Current version:** 0.1.16
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Update Coverage Atlas 0.1.15.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/3417d60486b3d00749a109e2076aa9388970328c/Coverage%20Atlas%200.1.15.pyw)
+[Update Coverage Atlas 0.1.16.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/942f5e0e37b834059d65c2b50e25d2ee9c4f63d3/Coverage%20Atlas%200.1.16.pyw)
 
 ## Principles
 
@@ -62,7 +62,7 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Large collections are solved exactly by mandatory-release propagation and independent coverage components instead of a global release-count cutoff.
 - PMF/TT-style dynamic-range measurement is integrated directly into analysis: per-track DR and complete-release DR are calculated and cached locally.
 - DR analysis runs up to four files in parallel and uses the existing local FFmpeg decoder when available; Coverage Atlas does not install FFmpeg automatically.
-- Main Coverage Atlas displays DR but does not yet use DR as an optimization preference; that behavior is intentionally left to Reasoning Lab training first.
+- Dynamic range is used only as a late tie-breaker between otherwise-identical releases. For CD rips, Logchecker score must tie first; for WEB releases, higher DR wins when coverage and file count are identical.
 
 ## Data isolation
 
@@ -100,6 +100,8 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 
 [Update Coverage Atlas Reasoning Lab 0.1.20.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/04fa9d5c8efd7a670a681135f6907a25a39246fe/Coverage%20Atlas%20Reasoning%20Lab%200.1.20.pyw)
 
+[Update Selection Rules 1.4.0](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/b706472da7445211d6589157e4d1b483f10b167e/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
+
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
 - Import a test music folder.
@@ -116,7 +118,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Detect explicit snippet/excerpt/preview/callout labels in release-folder paths, not only in track titles; generic `Sampler` folders with full-length songs remain eligible.
 - Detect and score rip logs for every compared release, even before a pair is known to be an exact duplicate; expose those scores to the selection-rule engine.
 - Selection Rules v1.3.0 automatically choose the higher-scoring rip when both releases are CD rips with identical track identities and track counts.
-- Selection Rules v1.3.1 fixes validation of the Logchecker score fields when loading the rule pack.
+- Selection Rules v1.4.0 add DR tie-breaking for otherwise-identical CD/WEB releases: CD requires equal Logchecker score first; WEB compares DR directly.
 - Each compared release now has a folder button next to its path for opening the exact release folder in Explorer.
 - Remember the last selected test-folder path and selection-rules file path across Reasoning Lab updates, and reopen future file pickers at those locations.
 - Reasoning Lab now auto-loads both at startup: it restores the last selection-rules file and automatically rescans the last test folder without requiring button clicks.
