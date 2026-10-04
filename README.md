@@ -91,9 +91,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.17
+**Version:** 0.1.18
 
-[Update Coverage Atlas Reasoning Lab 0.1.17.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/f268d48851499a883f780d52fc8351e0cdcf0687/Coverage%20Atlas%20Reasoning%20Lab%200.1.17.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.18.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/12cea9e9507631d307864f31dbb14d6e08f075ff/Coverage%20Atlas%20Reasoning%20Lab%200.1.18.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -117,6 +117,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Suppress transient Windows console windows from dependency setup; logchecker provisioning happens before folder scanning.
 - If the embedded checker rejects a clearly supported XLD log, reload the bundled checker once and show the exact parser error instead of a generic `unrecognized` label.
 - `hey-bro-check-log` source and required EAC/XLD resources are merged into the apps; scanning never downloads or installs the checker.
+- Reasoning Lab compares complete releases, not individual discs. `CD1` / `CD2` / `Disc 1` / `Disc 2` inside the same physical release folder are merged into one release choice.
 - Newer legitimate EAC 1.x and XLD builds are accepted even when they postdate hey-bro-check-log's original hard-coded version table; they are registered dynamically for checksum/version comparisons.
 - Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
