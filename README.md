@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.2.1
+**Current version:** 0.2.2
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Update Coverage Atlas 0.2.1.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/f797d5bd8ab1aef030b9cf276b3a83b2c571e1d6/Coverage%20Atlas%200.2.1.pyw)
+[Update Coverage Atlas 0.2.2.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/61855612c0400099bc3a3c3380a7ca2ab4cb7af4/Coverage%20Atlas%200.2.2.pyw)
 
 ## Principles
 
@@ -27,17 +27,23 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 
 ## Workflow UI
 
-Coverage Atlas 0.2.1 reorganizes the desktop UI around the actual task order:
+Coverage Atlas 0.2.2 is result-first and fully automatic:
 
-1. **Analyze music folder** - choose the collection to scan.
-2. **Review redundant releases** - Atlas shows the releases it believes are unnecessary and explains why.
-3. **Export recommendations** - save the complete KEEP / REDUNDANT / IRRELEVANT plan as CSV.
+1. Choose **Analyze collection** and select one music folder.
+2. Atlas applies the learned filtering/selection rules automatically.
+3. The main table switches directly to **Final collection** - the release set Atlas recommends keeping.
 
-The startup screen explains what Atlas does before any action is taken. After analysis, the main guidance changes automatically to the next step and reports the KEEP / REDUNDANT / IRRELEVANT counts. Manual override controls are kept beside the selected-release details and explicitly labeled as optional overrides, rather than being presented as the first actions in the app.
+There is no required redundant-release review step. **Show removed releases** is optional diagnostics only.
 
-`DR priority mode`, diagnostic logs, and reset controls are under **Advanced options** so they do not compete with the normal workflow.
+The result view is designed around the actual goal: preserve all valuable unique track versions while minimizing duplicate releases/files and ignoring ordinary remixes, live recordings and snippets according to the learned policy.
+
+Selecting a removed release is optional. Its details show which kept release(s) cover its valuable content and list same-title variants with date/media/source/files/DR/Logchecker/barcode so decisions can be audited when needed.
+
+**Export result** exports only the final KEEP/FORCED collection.
 
 Coverage Atlas never deletes, moves, or modifies music files.
+
+- Coverage Atlas 0.2.2 also fixes the embedded Logchecker temporary-path error by defining the app TEMP directory explicitly.
 
 ## Current features
 
