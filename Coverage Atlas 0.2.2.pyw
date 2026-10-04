@@ -3151,16 +3151,17 @@ class App(tk.Tk):
             with open(path, 'w', encoding='utf-8-sig', newline='') as fh:
                 writer = csv.writer(fh)
                 writer.writerow([
-                    'Recommendation', 'Date', 'Release', 'Media', 'Source',
+                    'Date', 'Release', 'Media', 'Source',
                     'Files', 'Valuable identities', 'Dynamic range',
-                    'Logchecker', 'Barcode', 'Folder', 'Reason',
+                    'Logchecker', 'Barcode', 'Folder', 'Why kept',
                 ])
                 for rid, release in sorted(
                     self.m.releases.items(),
                     key=lambda item: (item[1].date, item[1].name, item[0]),
                 ):
+                    if self.status_of(rid) not in {'KEEP', 'FORCED'}:
+                        continue
                     writer.writerow([
-                        self.status_of(rid),
                         release.date,
                         release.name,
                         release.media_type,
@@ -3179,7 +3180,7 @@ class App(tk.Tk):
                         release.folder,
                         self.m.reason.get(rid, ''),
                     ])
-            LOG.event('recommendations_exported', path=path)
+            LOG.event('final_collection_exported', path=path, kept_count=len(self.m.kept))
             self.status.config(text=f'Result exported: {Path(path).name}')
         except Exception as exc:
             LOG.error('recommendations_export_failed', exc, path=path)
