@@ -97,9 +97,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.25
+**Version:** 0.1.26
 
-[Update Coverage Atlas Reasoning Lab 0.1.25.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/727b522a42a360c2256fb7cf89b45ef9b557bcc9/Coverage%20Atlas%20Reasoning%20Lab%200.1.25.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.26.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/1c2226942b064636582185fd8e6b87d5480db255/Coverage%20Atlas%20Reasoning%20Lab%200.1.26.pyw)
 
 [Update Selection Rules 1.5.0](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/08d97ad08c945f507dcf265e6e568b6a2f9c27b1/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
 
@@ -134,6 +134,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Default DR behavior is on-demand: no full-library DR pass. Only unresolved equivalent releases are measured. They must have the same track identities/classes/count, and corresponding track lengths may differ by up to 7 seconds. Equal-score CD duplicates and WEB duplicates can then be decided by higher DR.
 - `DR priority mode` is a persistent checkbox. When enabled, Reasoning Lab measures every release and applies higher DR before every ordinary selection rule.
 - Reasoning Lab 0.1.25 fixes the DR fallback gate so equivalent rips with small duration differences (such as separate CD pressings/rips of the same tracklist) trigger lazy DR measurement instead of remaining `not measured`.
+- Reasoning Lab 0.1.26 fixes the missing `defaultdict` import used by the lazy DR duplicate comparison gate.
 - Newer legitimate EAC 1.x and XLD builds are accepted even when they postdate hey-bro-check-log's original hard-coded version table; they are registered dynamically for checksum/version comparisons.
 - Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
