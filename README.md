@@ -97,11 +97,11 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.27
+**Version:** 0.1.28
 
-[Update Coverage Atlas Reasoning Lab 0.1.27.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/3c859ee3f74417c4aa1a7b688094d3afad490709/Coverage%20Atlas%20Reasoning%20Lab%200.1.27.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.28.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/369678c3343b10051bc05aa95bb5afec2f8ac649/Coverage%20Atlas%20Reasoning%20Lab%200.1.28.pyw)
 
-[Update Selection Rules 1.5.0](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/08d97ad08c945f507dcf265e6e568b6a2f9c27b1/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
+[Update Selection Rules 1.5.1](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/8d87ead14616e30be92e1b2dbfb86f4721fe04aa/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -136,6 +136,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Reasoning Lab 0.1.25 fixes the DR fallback gate so equivalent rips with small duration differences (such as separate CD pressings/rips of the same tracklist) trigger lazy DR measurement instead of remaining `not measured`.
 - Reasoning Lab 0.1.26 fixes the missing `defaultdict` import used by the lazy DR duplicate comparison gate.
 - Reasoning Lab 0.1.27 no longer asks the user to compare two releases when both contain zero valuable tracks. Remix-only/live-only/snippet-only pairs are skipped entirely because they contribute no coverage.
+- Reasoning Lab 0.1.28 auto-resolves pairs with identical valuable coverage when every difference is an ignored remix/live/snippet extra; these equivalent releases no longer become manual questions.
 - Newer legitimate EAC 1.x and XLD builds are accepted even when they postdate hey-bro-check-log's original hard-coded version table; they are registered dynamically for checksum/version comparisons.
 - Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
