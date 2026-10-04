@@ -3139,7 +3139,7 @@ class App(tk.Tk):
             'title': 'Export Coverage Atlas result',
             'defaultextension': '.csv',
             'filetypes': [('CSV files', '*.csv')],
-            'initialfile': ff'Coverage Atlas Result {stamp}.csv',
+            'initialfile': f'Coverage Atlas Result {stamp}.csv',
         }
         if initialdir and Path(initialdir).is_dir():
             kwargs['initialdir'] = initialdir
