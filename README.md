@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.17
+**Current version:** 0.1.18
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Update Coverage Atlas 0.1.17.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/9a1806306cef46a01bad4dcd6831d6c8e9146f9f/Coverage%20Atlas%200.1.17.pyw)
+[Update Coverage Atlas 0.1.18.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/96db83c3a16ddab3bd68d19a5c1418d41169aeeb/Coverage%20Atlas%200.1.18.pyw)
 
 ## Principles
 
@@ -97,9 +97,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.24
+**Version:** 0.1.25
 
-[Update Coverage Atlas Reasoning Lab 0.1.24.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/88b0cf323a3cdc06f3826b49b373d6e38d97989d/Coverage%20Atlas%20Reasoning%20Lab%200.1.24.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.25.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/727b522a42a360c2256fb7cf89b45ef9b557bcc9/Coverage%20Atlas%20Reasoning%20Lab%200.1.25.pyw)
 
 [Update Selection Rules 1.5.0](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/08d97ad08c945f507dcf265e6e568b6a2f9c27b1/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
 
@@ -131,8 +131,9 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Reasoning Lab 0.1.24 rebuilds the duplicate-log comparison changes from the last stable base after 0.1.22/0.1.23 startup syntax regressions.
 - Reasoning Lab compares complete releases, not individual discs. `CD1` / `CD2` / `Disc 1` / `Disc 2` inside the same physical release folder are merged into one release choice.
 - Reasoning Lab displays per-track and whole-release DR values and exposes `left_dynamic_range`, `right_dynamic_range`, `left_dynamic_range_db`, `right_dynamic_range_db`, and `dynamic_range_comparable` to future selection rules.
-- Default DR behavior is on-demand: no full-library DR pass. Only unresolved strict absolute duplicates are measured; equal-score CD duplicates and WEB duplicates can then be decided by higher DR.
+- Default DR behavior is on-demand: no full-library DR pass. Only unresolved equivalent releases are measured. They must have the same track identities/classes/count, and corresponding track lengths may differ by up to 7 seconds. Equal-score CD duplicates and WEB duplicates can then be decided by higher DR.
 - `DR priority mode` is a persistent checkbox. When enabled, Reasoning Lab measures every release and applies higher DR before every ordinary selection rule.
+- Reasoning Lab 0.1.25 fixes the DR fallback gate so equivalent rips with small duration differences (such as separate CD pressings/rips of the same tracklist) trigger lazy DR measurement instead of remaining `not measured`.
 - Newer legitimate EAC 1.x and XLD builds are accepted even when they postdate hey-bro-check-log's original hard-coded version table; they are registered dynamically for checksum/version comparisons.
 - Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
