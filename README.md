@@ -86,9 +86,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.12
+**Version:** 0.1.13
 
-[Update Coverage Atlas Reasoning Lab 0.1.12.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/c8b244a893cd3c003b20102a3393cd24e31241aa/Coverage%20Atlas%20Reasoning%20Lab%200.1.12.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.13.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/37dc868d240681d245ddd627a3a60e8ad9149845/Coverage%20Atlas%20Reasoning%20Lab%200.1.13.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -109,6 +109,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Selection Rules v1.3.1 fixes validation of the Logchecker score fields when loading the rule pack.
 - Each compared release now has a folder button next to its path for opening the exact release folder in Explorer.
 - Remember the last selected test-folder path and selection-rules file path across Reasoning Lab updates, and reopen future file pickers at those locations.
+- Suppress transient Windows console windows from dependency setup; logchecker provisioning happens before folder scanning.
 - Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
