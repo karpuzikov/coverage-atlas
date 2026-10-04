@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.12
+**Current version:** 0.1.13
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Update Coverage Atlas 0.1.12.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/a59b72d0017ea2160202e3d8ff47a8aae0ca0976/Coverage%20Atlas%200.1.12.pyw)
+[Update Coverage Atlas 0.1.13.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/01275046545f324b95fd249bf60204f6c0a3f832/Coverage%20Atlas%200.1.13.pyw)
 
 ## Principles
 
@@ -54,7 +54,7 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Explicit WEB/CD folder markers take precedence over incidental CUE/log files, and names such as `2CD` are recognized as CD evidence.
 - Score every discovered EAC/XLD rip log locally with `ligh7s/hey-bro-check-log`; cache results by file size and modification time.
 - Prefer higher Logchecker scores only after coverage, release-count, CD/WEB, and file-count priorities are tied.
-- Uses [ligh7s/hey-bro-check-log](https://github.com/ligh7s/hey-bro-check-log) directly in Python; PHP is no longer required. Rip logs are not uploaded to external services.
+- Vendors [ligh7s/hey-bro-check-log](https://github.com/ligh7s/hey-bro-check-log) 1.3.2 directly inside each `.pyw`; no checker package, PHP, or external executable is installed. Rip logs are not uploaded.
 - Multi-disc album names are normalized so `CD1` / `Disc 1` suffixes do not become the release title.
 - Organizational folders such as numbered `Remixes` or `Tracks` containers are not treated as one giant release; direct loose audio files are modeled individually.
 - Excluding the last provider of a track/version no longer makes that content disappear from the universe; lost content is explicitly reported.
@@ -71,12 +71,17 @@ Diagnostic logs are stored in:
 
 `Documents\Karpuzikov Tools\Coverage Atlas\logs\`
 
+## Third-party code
+
+- `ligh7s/hey-bro-check-log` 1.3.2 is vendored from commit `d3192ad2764f2682cffce4db2abc419f8ac68c69` under Apache-2.0. The complete upstream license is embedded in each app source.
+- Coverage Atlas adapts the checker for single-file use by replacing its external encoding dependency, disabling markup output, and materializing its bundled resources locally at runtime.
+
 ## Requirements
 
 - Windows
 - Python with Tkinter
 - `mutagen` is installed automatically when missing
-- `ligh7s/hey-bro-check-log` is installed automatically into Coverage Atlas' isolated dependency folder when rip logs need scoring
+- `ligh7s/hey-bro-check-log` 1.3.2 is bundled inside the `.pyw`; no checker download or installation is required
 
 ## Safety
 
@@ -86,9 +91,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.15
+**Version:** 0.1.16
 
-[Update Coverage Atlas Reasoning Lab 0.1.15.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/4250d7bc2db61153b4584b98b947d913a3587d2d/Coverage%20Atlas%20Reasoning%20Lab%200.1.15.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.16.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/954d1c779660a0163bcc82a6e3dcbf5acfd24432/Coverage%20Atlas%20Reasoning%20Lab%200.1.16.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -110,8 +115,8 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Each compared release now has a folder button next to its path for opening the exact release folder in Explorer.
 - Remember the last selected test-folder path and selection-rules file path across Reasoning Lab updates, and reopen future file pickers at those locations.
 - Suppress transient Windows console windows from dependency setup; logchecker provisioning happens before folder scanning.
-- If hey-bro-check-log rejects a clearly supported XLD log, clean-reinstall and retry the checker once; show the exact checker/parser error instead of the generic `unrecognized` label.
-- Install hey-bro-check-log from its pinned GitHub source archive directly instead of installing the old project through pip/Poetry; this avoids modern pip build failures.
+- If the embedded checker rejects a clearly supported XLD log, reload the bundled checker once and show the exact parser error instead of a generic `unrecognized` label.
+- `hey-bro-check-log` source and required EAC/XLD resources are merged into the apps; scanning never downloads or installs the checker.
 - Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
