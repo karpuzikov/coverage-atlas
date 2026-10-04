@@ -97,9 +97,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.23
+**Version:** 0.1.24
 
-[Update Coverage Atlas Reasoning Lab 0.1.23.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/43a4e0a1a6e32e62d8f268ff9b39fffc00a8a97c/Coverage%20Atlas%20Reasoning%20Lab%200.1.23.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.24.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/88b0cf323a3cdc06f3826b49b373d6e38d97989d/Coverage%20Atlas%20Reasoning%20Lab%200.1.24.pyw)
 
 [Update Selection Rules 1.5.0](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/08d97ad08c945f507dcf265e6e568b6a2f9c27b1/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
 
@@ -128,7 +128,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - `hey-bro-check-log` source and required EAC/XLD resources are merged into the apps; scanning never downloads or installs the checker.
 - Reasoning Lab fingerprints the raw contents of every rip log. If two releases have byte-identical log contents and identical audio-file signatures, they are treated as a copied duplicate and one canonical copy is selected automatically.
 - Duplicate-log matching ignores the external `.log` filename itself, so files such as `Release.log` and `Release(1).log` still match when their contents are identical.
-- Reasoning Lab 0.1.23 fixes the startup syntax error introduced by the duplicate-log comparison code in 0.1.22.
+- Reasoning Lab 0.1.24 rebuilds the duplicate-log comparison changes from the last stable base after 0.1.22/0.1.23 startup syntax regressions.
 - Reasoning Lab compares complete releases, not individual discs. `CD1` / `CD2` / `Disc 1` / `Disc 2` inside the same physical release folder are merged into one release choice.
 - Reasoning Lab displays per-track and whole-release DR values and exposes `left_dynamic_range`, `right_dynamic_range`, `left_dynamic_range_db`, `right_dynamic_range_db`, and `dynamic_range_comparable` to future selection rules.
 - Default DR behavior is on-demand: no full-library DR pass. Only unresolved strict absolute duplicates are measured; equal-score CD duplicates and WEB duplicates can then be decided by higher DR.
