@@ -3410,7 +3410,11 @@ class App(tk.Tk):
 
             if self.session:
                 self.save_current_release_notes()
-                stats = self.session.apply_rule_pack(rule_pack)
+                stats = self.session.apply_rule_pack(
+                    rule_pack,
+                    dr_priority_mode=bool(self.dr_priority_var.get()),
+                    dr_progress=self.dr_rule_progress,
+                )
                 self.rules_label.config(
                     text=f'Rules: {rule_pack.name} v{rule_pack.version} ({stats["covered"]} covered / {stats["unresolved"]} unresolved)'
                 )
