@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.13
+**Current version:** 0.1.14
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Update Coverage Atlas 0.1.13.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/01275046545f324b95fd249bf60204f6c0a3f832/Coverage%20Atlas%200.1.13.pyw)
+[Update Coverage Atlas 0.1.14.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/15c967e2578e54225805b06210e3a13015a77893/Coverage%20Atlas%200.1.14.pyw)
 
 ## Principles
 
@@ -91,9 +91,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.16
+**Version:** 0.1.17
 
-[Update Coverage Atlas Reasoning Lab 0.1.16.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/954d1c779660a0163bcc82a6e3dcbf5acfd24432/Coverage%20Atlas%20Reasoning%20Lab%200.1.16.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.17.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/f268d48851499a883f780d52fc8351e0cdcf0687/Coverage%20Atlas%20Reasoning%20Lab%200.1.17.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -117,6 +117,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Suppress transient Windows console windows from dependency setup; logchecker provisioning happens before folder scanning.
 - If the embedded checker rejects a clearly supported XLD log, reload the bundled checker once and show the exact parser error instead of a generic `unrecognized` label.
 - `hey-bro-check-log` source and required EAC/XLD resources are merged into the apps; scanning never downloads or installs the checker.
+- Newer legitimate EAC 1.x and XLD builds are accepted even when they postdate hey-bro-check-log's original hard-coded version table; they are registered dynamically for checksum/version comparisons.
 - Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
