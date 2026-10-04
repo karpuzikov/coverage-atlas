@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.2.0
+**Current version:** 0.2.1
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Update Coverage Atlas 0.2.0.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/b0be0e2c414c13c62758c4d96a040f038c38a0a7/Coverage%20Atlas%200.2.0.pyw)
+[Update Coverage Atlas 0.2.1.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/f797d5bd8ab1aef030b9cf276b3a83b2c571e1d6/Coverage%20Atlas%200.2.1.pyw)
 
 ## Principles
 
@@ -24,6 +24,20 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Highlight track versions that currently have no alternative provider.
 - Do not silently merge ambiguous track identities.
 - Never delete, move, or modify music during analysis.
+
+## Workflow UI
+
+Coverage Atlas 0.2.1 reorganizes the desktop UI around the actual task order:
+
+1. **Analyze music folder** - choose the collection to scan.
+2. **Review redundant releases** - Atlas shows the releases it believes are unnecessary and explains why.
+3. **Export recommendations** - save the complete KEEP / REDUNDANT / IRRELEVANT plan as CSV.
+
+The startup screen explains what Atlas does before any action is taken. After analysis, the main guidance changes automatically to the next step and reports the KEEP / REDUNDANT / IRRELEVANT counts. Manual override controls are kept beside the selected-release details and explicitly labeled as optional overrides, rather than being presented as the first actions in the app.
+
+`DR priority mode`, diagnostic logs, and reset controls are under **Advanced options** so they do not compete with the normal workflow.
+
+Coverage Atlas never deletes, moves, or modifies music files.
 
 ## Current features
 
