@@ -97,11 +97,11 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.21
+**Version:** 0.1.22
 
-[Update Coverage Atlas Reasoning Lab 0.1.21.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/1a5f64e67eb1275618c582eb4861ef2797479d55/Coverage%20Atlas%20Reasoning%20Lab%200.1.21.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.22.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/2d951431d500ee9e674a1c05f7893f188de6d310/Coverage%20Atlas%20Reasoning%20Lab%200.1.22.pyw)
 
-[Update Selection Rules 1.4.1](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/5cd41cba9b0470ac56940542a2cf4a1b1281f52f/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
+[Update Selection Rules 1.5.0](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/08d97ad08c945f507dcf265e6e568b6a2f9c27b1/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -119,13 +119,15 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Detect explicit snippet/excerpt/preview/callout labels in release-folder paths, not only in track titles; generic `Sampler` folders with full-length songs remain eligible.
 - Detect and score rip logs for every compared release, even before a pair is known to be an exact duplicate; expose those scores to the selection-rule engine.
 - Selection Rules v1.3.0 automatically choose the higher-scoring rip when both releases are CD rips with identical track identities and track counts.
-- Selection Rules v1.4.1 contain only ordinary selection rules. DR is now handled by Reasoning Lab after all ordinary rules fail, so it cannot pre-empt them accidentally.
+- Selection Rules v1.5.0 add a copied-duplicate rule: byte-identical rip logs plus identical audio-file signatures automatically keep one deterministic canonical copy. DR remains separate and cannot pre-empt ordinary rules unless DR priority mode is enabled.
 - Each compared release now has a folder button next to its path for opening the exact release folder in Explorer.
 - Remember the last selected test-folder path and selection-rules file path across Reasoning Lab updates, and reopen future file pickers at those locations.
 - Reasoning Lab now auto-loads both at startup: it restores the last selection-rules file and automatically rescans the last test folder without requiring button clicks.
 - Suppress transient Windows console windows from dependency setup; logchecker provisioning happens before folder scanning.
 - If the embedded checker rejects a clearly supported XLD log, reload the bundled checker once and show the exact parser error instead of a generic `unrecognized` label.
 - `hey-bro-check-log` source and required EAC/XLD resources are merged into the apps; scanning never downloads or installs the checker.
+- Reasoning Lab fingerprints the raw contents of every rip log. If two releases have byte-identical log contents and identical audio-file signatures, they are treated as a copied duplicate and one canonical copy is selected automatically.
+- Duplicate-log matching ignores the external `.log` filename itself, so files such as `Release.log` and `Release(1).log` still match when their contents are identical.
 - Reasoning Lab compares complete releases, not individual discs. `CD1` / `CD2` / `Disc 1` / `Disc 2` inside the same physical release folder are merged into one release choice.
 - Reasoning Lab displays per-track and whole-release DR values and exposes `left_dynamic_range`, `right_dynamic_range`, `left_dynamic_range_db`, `right_dynamic_range_db`, and `dynamic_range_comparable` to future selection rules.
 - Default DR behavior is on-demand: no full-library DR pass. Only unresolved strict absolute duplicates are measured; equal-score CD duplicates and WEB duplicates can then be decided by higher DR.
