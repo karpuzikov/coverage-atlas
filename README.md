@@ -91,9 +91,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.18
+**Version:** 0.1.19
 
-[Update Coverage Atlas Reasoning Lab 0.1.18.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/12cea9e9507631d307864f31dbb14d6e08f075ff/Coverage%20Atlas%20Reasoning%20Lab%200.1.18.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.19.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/cf741552829b536781339fe4e35b8fbb984fa2d1/Coverage%20Atlas%20Reasoning%20Lab%200.1.19.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -114,6 +114,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Selection Rules v1.3.1 fixes validation of the Logchecker score fields when loading the rule pack.
 - Each compared release now has a folder button next to its path for opening the exact release folder in Explorer.
 - Remember the last selected test-folder path and selection-rules file path across Reasoning Lab updates, and reopen future file pickers at those locations.
+- Reasoning Lab now auto-loads both at startup: it restores the last selection-rules file and automatically rescans the last test folder without requiring button clicks.
 - Suppress transient Windows console windows from dependency setup; logchecker provisioning happens before folder scanning.
 - If the embedded checker rejects a clearly supported XLD log, reload the bundled checker once and show the exact parser error instead of a generic `unrecognized` label.
 - `hey-bro-check-log` source and required EAC/XLD resources are merged into the apps; scanning never downloads or installs the checker.
