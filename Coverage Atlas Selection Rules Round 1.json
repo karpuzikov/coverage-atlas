@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "Coverage Atlas learned selection rules - round 1",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "training_session_id": "372fc9b32d0e-8db7c60a08ba49a0",
   "training_release_set_hash": "8db7c60a08ba49a0",
   "derived_from_answered_pairs": 16,
@@ -17,7 +17,8 @@
     "Tracks inside release folders explicitly labeled Snippet, Excerpt, Preview, Callout, or Hook are promotional fragments even when the individual track titles omit those labels. A generic Sampler folder alone does not imply snippets.",
     "When valuable track coverage, raw track identities, track count, and CD media type are equivalent, prefer the rip with the higher Logchecker score; if either score is unavailable or tied, do not decide by this rule.",
     "Dynamic range is not a normal selection rule. In default mode it is measured only after all ordinary rules fail and only for strict absolute duplicates; CD duplicates also require equal Logchecker scores. DR priority mode is an explicit override handled by the Reasoning Lab itself.",
-    "If two releases have byte-identical rip-log contents and identical audio-file signatures, they are treated as a copied duplicate. Keep exactly one copy; prefer the release/log naming that does not look like a duplicate suffix such as (1) or Copy, otherwise use a stable path order."
+    "If two releases have byte-identical rip-log contents and identical audio-file signatures, they are treated as a copied duplicate. Keep exactly one copy; prefer the release/log naming that does not look like a duplicate suffix such as (1) or Copy, otherwise use a stable path order.",
+    "If two releases preserve the same valuable coverage and every difference between them is an ignored remix/live/snippet track, they are equivalent for selection. Do not ask the user; keep one deterministic canonical release."
   ],
   "rules": [
     {
@@ -30,6 +31,18 @@
       "id": "identical_rip_log_copy_choose_right",
       "description": "The releases have byte-identical rip logs and identical audio-file signatures. They are the same copied rip; keep one deterministic canonical copy.",
       "when": "identical_rip_logs and absolute_audio_duplicate and duplicate_log_prefer_right",
+      "choose": "right"
+    },
+    {
+      "id": "equivalent_ignored_extras_choose_left",
+      "description": "Valuable coverage is identical and all differing tracks are ignored extras (remix/live/snippet). The releases are equivalent; keep one deterministic canonical copy.",
+      "when": "equivalent_ignored_extras and equivalent_ignored_extras_prefer_left",
+      "choose": "left"
+    },
+    {
+      "id": "equivalent_ignored_extras_choose_right",
+      "description": "Valuable coverage is identical and all differing tracks are ignored extras (remix/live/snippet). The releases are equivalent; keep one deterministic canonical copy.",
+      "when": "equivalent_ignored_extras and equivalent_ignored_extras_prefer_right",
       "choose": "right"
     },
     {
@@ -75,5 +88,5 @@
       "choose": "right"
     }
   ],
-  "minimum_app_version": "0.1.22"
+  "minimum_app_version": "0.1.28"
 }
