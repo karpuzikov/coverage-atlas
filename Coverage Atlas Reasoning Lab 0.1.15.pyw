@@ -235,6 +235,7 @@ HEYBROCHECKLOG_PACKAGE_VERSION = '1.3.2'
 LOGCHECKER_RESULT_CACHE = DATA / 'cache' / 'heybrochecklog-results-v2.json'
 _LOGCHECKER_LOCK = threading.RLock()
 _HEYBRO_SCORE_LOG = None
+_HEYBRO_LAST_ERROR = None
 
 
 def purge_heybrochecklog():
@@ -259,6 +260,7 @@ def purge_heybrochecklog():
 
 
 def ensure_chardet():
+    global _HEYBRO_LAST_ERROR
     try:
         import chardet
         return True
@@ -287,6 +289,7 @@ def ensure_chardet():
         )
         return True
     except Exception as exc:
+        _HEYBRO_LAST_ERROR = f'chardet install/import failed: {type(exc).__name__}: {exc}'
         LOG.error('dependency_install_failed', exc, dependency='chardet', target=str(DEPS))
         return False
 
@@ -361,6 +364,7 @@ def download_heybrochecklog_source():
 
 
 def install_heybrochecklog_source(force=False):
+    global _HEYBRO_LAST_ERROR
     if force:
         purge_heybrochecklog()
 
@@ -389,6 +393,7 @@ def install_heybrochecklog_source(force=False):
         importlib.invalidate_caches()
 
         from heybrochecklog.score import score_log
+        _HEYBRO_LAST_ERROR = None
         LOG.event(
             'dependency_source_install_complete',
             dependency='ligh7s/hey-bro-check-log',
@@ -400,6 +405,7 @@ def install_heybrochecklog_source(force=False):
         )
         return score_log
     except Exception as exc:
+        _HEYBRO_LAST_ERROR = f'{type(exc).__name__}: {exc}'
         LOG.error(
             'dependency_source_install_failed',
             exc,
@@ -412,7 +418,7 @@ def install_heybrochecklog_source(force=False):
 
 
 def ensure_heybrochecklog(force=False):
-    global _HEYBRO_SCORE_LOG
+    global _HEYBRO_SCORE_LOG, _HEYBRO_LAST_ERROR
     with _LOGCHECKER_LOCK:
         if force:
             purge_heybrochecklog()
@@ -424,6 +430,7 @@ def ensure_heybrochecklog(force=False):
             try:
                 from heybrochecklog.score import score_log
                 _HEYBRO_SCORE_LOG = score_log
+                _HEYBRO_LAST_ERROR = None
                 LOG.event(
                     'heybrochecklog_imported',
                     version=HEYBROCHECKLOG_PACKAGE_VERSION,
@@ -509,7 +516,7 @@ def analyze_logchecker_file(path: Path) -> dict:
                 'deductions': [],
                 'flagged': False,
                 'recognized': False,
-                'error': 'Checker unavailable: ligh7s/hey-bro-check-log source could not be downloaded/imported.',
+                'error': ('Checker unavailable: ' + (_HEYBRO_LAST_ERROR or 'ligh7s/hey-bro-check-log source could not be downloaded/imported.')),
                 'checker': 'ligh7s/hey-bro-check-log',
                 'checker_commit': HEYBROCHECKLOG_COMMIT,
                 'checker_version': HEYBROCHECKLOG_PACKAGE_VERSION,
@@ -547,7 +554,7 @@ def analyze_logchecker_file(path: Path) -> dict:
                         if unrecognized else None
                     ),
                     'checker': 'ligh7s/hey-bro-check-log',
-                'checker_commit': HEYBROCHECKLOG_COMMIT,
+                    'checker_commit': HEYBROCHECKLOG_COMMIT,
                     'checker_version': HEYBROCHECKLOG_PACKAGE_VERSION,
                     'checked_at': time.time(),
                 }
@@ -564,7 +571,7 @@ def analyze_logchecker_file(path: Path) -> dict:
                     'recognized': False,
                     'error': f'Checker exception: {type(exc).__name__}: {exc}',
                     'checker': 'ligh7s/hey-bro-check-log',
-                'checker_commit': HEYBROCHECKLOG_COMMIT,
+                    'checker_commit': HEYBROCHECKLOG_COMMIT,
                     'checker_version': HEYBROCHECKLOG_PACKAGE_VERSION,
                     'checked_at': time.time(),
                 }
@@ -595,7 +602,7 @@ def analyze_logchecker_file(path: Path) -> dict:
             'recognized': False,
             'error': f'Checker exception: {type(exc).__name__}: {exc}',
             'checker': 'ligh7s/hey-bro-check-log',
-                'checker_commit': HEYBROCHECKLOG_COMMIT,
+            'checker_commit': HEYBROCHECKLOG_COMMIT,
         }
 
 
