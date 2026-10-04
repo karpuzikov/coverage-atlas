@@ -86,9 +86,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.9
+**Version:** 0.1.10
 
-[Update Coverage Atlas Reasoning Lab 0.1.9.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/a350d175b0f9ace1d65caf0d5303f847b3812687/Coverage%20Atlas%20Reasoning%20Lab%200.1.9.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.10.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/b1ad617c4d23b38c014ebb9c16ba0735bc355a6f/Coverage%20Atlas%20Reasoning%20Lab%200.1.10.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -107,6 +107,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Score local CD rip logs with Logchecker only when at least two CD releases have the same track identities, track count, and rounded track durations; expose those scores to the selection-rule engine.
 - Selection Rules v1.3.0 automatically choose the higher-scoring rip when both releases are CD rips with identical track identities and track counts.
 - Selection Rules v1.3.1 fixes validation of the Logchecker score fields when loading the rule pack.
+- Each compared release now has a folder button next to its path for opening the exact release folder in Explorer.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
 - Keep all persistent data isolated under `Documents\Karpuzikov Tools\Coverage Atlas Reasoning Lab\`.
