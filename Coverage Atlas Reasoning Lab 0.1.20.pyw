@@ -19,7 +19,6 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from collections import Counter
 from itertools import combinations
-from array import array
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 APP = 'Coverage Atlas Reasoning Lab'
@@ -954,92 +953,73 @@ def _round_half_away(value: float) -> int:
     return int(math.floor(value + 0.5)) if value >= 0 else int(math.ceil(value - 0.5))
 
 
-def _centi_db_key(amplitude: float) -> int:
-    return _round_half_away(2000.0 * math.log10(amplitude))
+def _finite_level(text: str) -> float | None:
+    try:
+        value = float(text.strip())
+        return value if math.isfinite(value) else None
+    except Exception:
+        return None
 
 
-class _DRChannel:
-    __slots__ = (
-        'sum_squares', 'peak', 'histogram', 'valid_windows',
-        'primary', 'secondary', 'saw_nonzero'
-    )
+def _dr_from_channel_windows(windows: list[tuple[float | None, float | None]]) -> float | None:
+    if not windows:
+        return None
 
-    def __init__(self):
-        self.sum_squares = 0.0
-        self.peak = 0.0
-        self.histogram = [0] * 10001
-        self.valid_windows = 0
-        self.primary = None
-        self.secondary = None
-        self.saw_nonzero = False
+    histogram = [0] * 10001
+    peaks = []
+    saw_nonzero = False
 
-    def add(self, sample: float):
-        magnitude = abs(float(sample))
-        self.sum_squares += magnitude * magnitude
-        if magnitude > self.peak:
-            self.peak = magnitude
-        if magnitude != 0.0:
-            self.saw_nonzero = True
+    for rms_dbfs, peak_dbfs in windows:
+        if rms_dbfs is not None:
+            # TT-DR uses sqrt(2 * mean(square)); FFmpeg astats reports ordinary
+            # RMS, so add 20*log10(sqrt(2)) = 3.0102999566 dB.
+            dr_rms_db = rms_dbfs + 3.010299956639812
+            key = max(-10000, min(0, _round_half_away(dr_rms_db * 100.0)))
+            histogram[key + 10000] += 1
 
-    def _observe_peak(self, amplitude: float):
-        if amplitude <= 0.0:
-            return
-        candidate = (amplitude, _centi_db_key(amplitude))
-        if self.primary is None:
-            self.primary = candidate
-        elif candidate[1] > self.primary[1]:
-            self.secondary = self.primary
-            self.primary = candidate
-        elif self.secondary is None or candidate[1] > self.secondary[1]:
-            self.secondary = candidate
+        if peak_dbfs is not None:
+            saw_nonzero = True
+            peaks.append((peak_dbfs, _round_half_away(peak_dbfs * 100.0)))
 
-    def finish_window(self, frames: int):
-        if frames <= 0:
-            return
-        rms2 = 2.0 * self.sum_squares / float(frames)
-        rms = math.sqrt(max(0.0, rms2))
-        if rms > 0.0:
-            key = max(-10000, min(0, _centi_db_key(rms)))
-            self.histogram[key + 10000] += 1
-        self.valid_windows += 1
-        self._observe_peak(self.peak)
-        self.sum_squares = 0.0
-        self.peak = 0.0
+    if not saw_nonzero:
+        return 0.0
 
-    def result(self) -> float | None:
-        if self.valid_windows <= 0:
-            return None
-        if not self.saw_nonzero:
-            return 0.0
+    primary = None
+    secondary = None
+    for candidate in peaks:
+        if primary is None:
+            primary = candidate
+        elif candidate[1] > primary[1]:
+            secondary = primary
+            primary = candidate
+        elif secondary is None or candidate[1] > secondary[1]:
+            secondary = candidate
 
-        primary = self.primary[0] if self.primary else 0.0
-        secondary = self.secondary[0] if self.secondary else None
-        selected_peak = secondary if secondary and secondary > 0.0 else primary
+    if primary is None:
+        return 0.0
 
-        target = max(self.valid_windows // 5, 1)
-        selected_count = 0
-        selected_power = 0.0
-        for bin_index in range(10000, -1, -1):
-            count = self.histogram[bin_index]
-            if not count:
-                continue
-            bin_db = -100.0 + bin_index * 0.01
-            selected_count += count
-            selected_power += (10.0 ** (bin_db / 10.0)) * count
-            if selected_count >= target:
-                break
+    target = max(len(windows) // 5, 1)
+    selected_count = 0
+    selected_power = 0.0
+    for bin_index in range(10000, -1, -1):
+        count = histogram[bin_index]
+        if not count:
+            continue
+        bin_db = -100.0 + bin_index * 0.01
+        selected_count += count
+        selected_power += (10.0 ** (bin_db / 10.0)) * count
+        if selected_count >= target:
+            break
 
-        if selected_count <= 0 or selected_peak <= 0.0:
-            return 0.0
+    if selected_count <= 0 or selected_power <= 0.0:
+        return 0.0
 
-        loud_rms = math.sqrt(selected_power / selected_count)
-        if loud_rms <= 0.0:
-            return 0.0
-
-        dr = -20.0 * math.log10(loud_rms / selected_peak)
-        if dr < 0.0 and primary > 0.0:
-            dr = max(0.0, -20.0 * math.log10(loud_rms / primary))
-        return float(dr)
+    loud_rms_db = 10.0 * math.log10(selected_power / selected_count)
+    selected_peak_db = secondary[0] if secondary is not None else primary[0]
+    dr = selected_peak_db - loud_rms_db
+    if dr < 0.0:
+        dr = max(0.0, primary[0] - loud_rms_db)
+    return float(dr)
 
 
 def probe_audio_stream(path: Path, sample_rate: int, channels: int, ffmpeg: str) -> tuple[int, int]:
@@ -1110,65 +1090,78 @@ def analyze_dynamic_range_file(path: Path, sample_rate: int = 0, channels: int =
         }
 
     window_frames = max(1, int(math.floor(sample_rate * DR_WINDOW_COEFFICIENT)))
-    states = [_DRChannel() for _ in range(channels)]
-    frames_in_window = 0
-    channel_index = 0
-    byte_remainder = b''
+    filter_graph = (
+        f'asetnsamples=n={window_frames}:p=0,'
+        'astats=metadata=1:reset=1,'
+        'ametadata=print:file=-'
+    )
 
     try:
-        proc = subprocess.Popen(
+        completed = subprocess.run(
             [
                 ffmpeg, '-hide_banner', '-loglevel', 'error', '-nostdin', '-xerror',
                 '-i', str(path), '-map', '0:a:0',
-                '-f', 'f32le', '-acodec', 'pcm_f32le', '-',
+                '-af', filter_graph,
+                '-f', 'null', '-',
             ],
+            check=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             **hidden_subprocess_kwargs(),
         )
 
-        assert proc.stdout is not None
-        while True:
-            chunk = proc.stdout.read(1024 * 1024)
-            if not chunk:
-                break
-            data = byte_remainder + chunk
-            usable = len(data) - (len(data) % 4)
-            if usable <= 0:
-                byte_remainder = data
-                continue
-            values = array('f')
-            values.frombytes(data[:usable])
-            if sys.byteorder != 'little':
-                values.byteswap()
-            byte_remainder = data[usable:]
-
-            for value in values:
-                states[channel_index].add(value)
-                channel_index += 1
-                if channel_index == channels:
-                    channel_index = 0
-                    frames_in_window += 1
-                    if frames_in_window == window_frames:
-                        for state in states:
-                            state.finish_window(frames_in_window)
-                        frames_in_window = 0
-
-        stderr = proc.stderr.read().decode('utf-8', 'replace').strip() if proc.stderr else ''
-        return_code = proc.wait()
-        if return_code != 0:
+        if completed.returncode != 0:
+            error = completed.stderr.decode('utf-8', 'replace').strip()
             return {
                 'dr': None,
                 'dr_db': None,
-                'error': stderr or f'ffmpeg exited with code {return_code}',
+                'error': error or f'ffmpeg exited with code {completed.returncode}',
                 'algorithm': DR_ALGORITHM_REVISION,
             }
 
-        if frames_in_window > 0:
-            for state in states:
-                state.finish_window(frames_in_window)
+        per_channel = {index: [] for index in range(1, channels + 1)}
+        current = {}
 
-        channel_drs = [value for value in (state.result() for state in states) if value is not None]
+        def flush_current():
+            if not current:
+                return
+            for index in range(1, channels + 1):
+                values = current.get(index, {})
+                per_channel[index].append(
+                    (values.get('rms'), values.get('peak'))
+                )
+            current.clear()
+
+        rms_re = re.compile(r'^lavfi\.astats\.(\d+)\.RMS_level=(.+)$')
+        peak_re = re.compile(r'^lavfi\.astats\.(\d+)\.Peak_level=(.+)$')
+
+        for raw_line in completed.stdout.decode('utf-8', 'replace').splitlines():
+            line = raw_line.strip()
+            if line.startswith('frame:'):
+                flush_current()
+                continue
+
+            match = rms_re.match(line)
+            if match:
+                index = int(match.group(1))
+                if 1 <= index <= channels:
+                    current.setdefault(index, {})['rms'] = _finite_level(match.group(2))
+                continue
+
+            match = peak_re.match(line)
+            if match:
+                index = int(match.group(1))
+                if 1 <= index <= channels:
+                    current.setdefault(index, {})['peak'] = _finite_level(match.group(2))
+
+        flush_current()
+
+        channel_drs = []
+        for index in range(1, channels + 1):
+            value = _dr_from_channel_windows(per_channel[index])
+            if value is not None:
+                channel_drs.append(value)
+
         if not channel_drs:
             return {
                 'dr': None,
