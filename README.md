@@ -86,9 +86,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.8
+**Version:** 0.1.9
 
-[Update Coverage Atlas Reasoning Lab 0.1.8.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/bd03f9894f68e7ba5f9c6ac4b222f3599d25a6c1/Coverage%20Atlas%20Reasoning%20Lab%200.1.8.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.9.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/a350d175b0f9ace1d65caf0d5303f847b3812687/Coverage%20Atlas%20Reasoning%20Lab%200.1.9.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -106,6 +106,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - Detect explicit snippet/excerpt/preview/callout labels in release-folder paths, not only in track titles; generic `Sampler` folders with full-length songs remain eligible.
 - Score local CD rip logs with Logchecker only when at least two CD releases have the same track identities, track count, and rounded track durations; expose those scores to the selection-rule engine.
 - Selection Rules v1.3.0 automatically choose the higher-scoring rip when both releases are CD rips with identical track identities and track counts.
+- Selection Rules v1.3.1 fixes validation of the Logchecker score fields when loading the rule pack.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
 - Never modify, move, or delete music.
 - Keep all persistent data isolated under `Documents\Karpuzikov Tools\Coverage Atlas Reasoning Lab\`.
@@ -163,9 +164,9 @@ Use **Open files to send** to open that exact folder directly. Exporting a train
 
 The first rule pack was derived from 16 answered Avril Lavigne comparisons.
 
-[Download Coverage Atlas Selection Rules Round 1 v1.3.0.json](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/2d0111ad1c83c61cddca226a75397613222dd055/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
+[Download Coverage Atlas Selection Rules Round 1 v1.3.1.json](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/e5fecbc6d3c099cb66da8f65d67af6b7976b6184/Coverage%20Atlas%20Selection%20Rules%20Round%201.json)
 
-Learned semantics in Reasoning Lab 0.1.8:
+Learned semantics in Reasoning Lab 0.1.9:
 
 - Live tracks do not count.
 - Snippets, excerpts, callout hooks, and similar promo fragments do not count.
