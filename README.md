@@ -1,17 +1,18 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.18
+**Current version:** 0.2.0
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Update Coverage Atlas 0.1.18.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/96db83c3a16ddab3bd68d19a5c1418d41169aeeb/Coverage%20Atlas%200.1.18.pyw)
+[Update Coverage Atlas 0.2.0.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/b0be0e2c414c13c62758c4d96a040f038c38a0a7/Coverage%20Atlas%200.2.0.pyw)
 
 ## Principles
 
 - Preserve wanted musical content first.
+- The learned production priority is: preserve coverage -> minimum releases -> fewer audio files -> CD preference -> higher Logchecker score for otherwise-identical CD choices -> canonical copied-rip choice -> DR final tie-breaker.
 - Minimize the number of releases.
 - Prefer known CD editions over WEB editions when musical coverage is otherwise equivalent.
 - When two CD rips provide identical track coverage and have the same file count, prefer the one with the higher Logchecker score.
@@ -50,9 +51,13 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Detailed JSONL diagnostic logging.
 - Ignored tracks are explicitly marked in the release detail view and diagnostic logs.
 - Releases containing only ignored remix/live material become irrelevant automatically.
+- Featured remixes remain valuable when the remix adds a featured artist; ordinary remixes remain ignored.
+- A release title containing `Remix`/`Remixes` no longer makes its original/non-remix tracks ignored; classification is track-level.
+- Snippet/excerpt/preview/callout/hook tracks and explicitly labeled parent folders are ignored, while generic sampler folders remain eligible.
 - Remix tracks and live recordings are visible but excluded from coverage and optimization.
 - Explicit WEB/CD folder markers take precedence over incidental CUE/log files, and names such as `2CD` are recognized as CD evidence.
 - Score every discovered EAC/XLD rip log locally with `ligh7s/hey-bro-check-log`; cache results by file size and modification time.
+- Rip-log cache entries also include a raw SHA-256 content fingerprint. Byte-identical logs plus identical audio signatures are treated as copied duplicates and one canonical copy is preferred without wasting a DR scan.
 - Prefer higher Logchecker scores only after coverage, release-count, CD/WEB, and file-count priorities are tied.
 - Vendors [ligh7s/hey-bro-check-log](https://github.com/ligh7s/hey-bro-check-log) 1.3.2 directly inside each `.pyw`; no checker package, PHP, or external executable is installed. Rip logs are not uploaded.
 - Multi-disc album names are normalized so `CD1` / `Disc 1` suffixes do not become the release title.
@@ -64,6 +69,11 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - DR analysis runs up to four files in parallel and uses the existing local FFmpeg decoder when available; Coverage Atlas does not install FFmpeg automatically.
 - Main Coverage Atlas also avoids a full DR pass by default and measures only strict duplicate candidates that can actually use DR as a tie-breaker.
 - Dynamic range is measured lazily by default, only for strict absolute-duplicate candidates after other selection criteria are tied. CD candidates additionally require equal Logchecker scores; WEB duplicates do not require rip logs.
+- `DR priority mode` is available in the main Atlas. It is persistent; when enabled, every release is measured and DR becomes the first preference after the minimum-release requirement.
+
+## Learned production policy
+
+Coverage Atlas 0.2.0 graduates Reasoning Lab Selection Rules 1.5.1 into the production optimizer. The current training round has no unresolved meaningful pairs, so the learned remix/live/snippet, file-count, Logchecker, copied-rip, and DR behaviors are now encoded directly in the main Atlas and do not require loading the Reasoning Lab rules file.
 
 ## Data isolation
 
