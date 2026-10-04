@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "name": "Coverage Atlas learned selection rules - round 1",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "training_session_id": "372fc9b32d0e-8db7c60a08ba49a0",
   "training_release_set_hash": "8db7c60a08ba49a0",
   "derived_from_answered_pairs": 16,
@@ -16,7 +16,7 @@
     "If valuable coverage is identical, prefer the release with fewer total tracks/files.",
     "Tracks inside release folders explicitly labeled Snippet, Excerpt, Preview, Callout, or Hook are promotional fragments even when the individual track titles omit those labels. A generic Sampler folder alone does not imply snippets.",
     "When valuable track coverage, raw track identities, track count, and CD media type are equivalent, prefer the rip with the higher Logchecker score; if either score is unavailable or tied, do not decide by this rule.",
-    "Dynamic range is a late tie-breaker only between otherwise-identical releases: for CD releases, Logchecker scores must be equal first; for WEB releases, higher DR wins when track identities/count and valuable coverage are identical."
+    "Dynamic range is not a normal selection rule. In default mode it is measured only after all ordinary rules fail and only for strict absolute duplicates; CD duplicates also require equal Logchecker scores. DR priority mode is an explicit override handled by the Reasoning Lab itself."
   ],
   "rules": [
     {
@@ -29,30 +29,6 @@
       "id": "higher_logchecker_score_identical_cd_rips_choose_right",
       "description": "For otherwise identical CD rips with the same track identities/count, choose the right release when its Logchecker score is higher.",
       "when": "same_valuable_coverage and left_unique == 0 and right_unique == 0 and left_track_count == right_track_count and left_media_type == 'CD' and right_media_type == 'CD' and left_logchecker_score is not None and right_logchecker_score is not None and right_logchecker_score > left_logchecker_score",
-      "choose": "right"
-    },
-    {
-      "id": "higher_dr_identical_cd_equal_log_choose_left",
-      "description": "For otherwise identical CD rips with equal Logchecker scores, choose the left release when its measured dynamic range is higher.",
-      "when": "same_valuable_coverage and left_unique == 0 and right_unique == 0 and left_track_count == right_track_count and left_media_type == 'CD' and right_media_type == 'CD' and left_logchecker_score is not None and right_logchecker_score is not None and left_logchecker_score == right_logchecker_score and left_dynamic_range is not None and right_dynamic_range is not None and left_dynamic_range > right_dynamic_range",
-      "choose": "left"
-    },
-    {
-      "id": "higher_dr_identical_cd_equal_log_choose_right",
-      "description": "For otherwise identical CD rips with equal Logchecker scores, choose the right release when its measured dynamic range is higher.",
-      "when": "same_valuable_coverage and left_unique == 0 and right_unique == 0 and left_track_count == right_track_count and left_media_type == 'CD' and right_media_type == 'CD' and left_logchecker_score is not None and right_logchecker_score is not None and left_logchecker_score == right_logchecker_score and left_dynamic_range is not None and right_dynamic_range is not None and right_dynamic_range > left_dynamic_range",
-      "choose": "right"
-    },
-    {
-      "id": "higher_dr_identical_web_choose_left",
-      "description": "For otherwise identical WEB releases, choose the left release when its measured dynamic range is higher.",
-      "when": "same_valuable_coverage and left_unique == 0 and right_unique == 0 and left_track_count == right_track_count and left_media_type == 'WEB' and right_media_type == 'WEB' and left_dynamic_range is not None and right_dynamic_range is not None and left_dynamic_range > right_dynamic_range",
-      "choose": "left"
-    },
-    {
-      "id": "higher_dr_identical_web_choose_right",
-      "description": "For otherwise identical WEB releases, choose the right release when its measured dynamic range is higher.",
-      "when": "same_valuable_coverage and left_unique == 0 and right_unique == 0 and left_track_count == right_track_count and left_media_type == 'WEB' and right_media_type == 'WEB' and left_dynamic_range is not None and right_dynamic_range is not None and right_dynamic_range > left_dynamic_range",
       "choose": "right"
     },
     {
@@ -86,5 +62,5 @@
       "choose": "right"
     }
   ],
-  "minimum_app_version": "0.1.20"
+  "minimum_app_version": "0.1.21"
 }
