@@ -22,7 +22,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 APP = 'Coverage Atlas'
 VERSION = '0.2.0'
 STATUS = 'Under construction ⚠️'
-MATCH_DURATION_TOLERANCE = 2.0
+MATCH_DURATION_TOLERANCE = 7.0
 EXACT_SEARCH_RELEASE_LIMIT = 70
 LEARNED_POLICY_VERSION = '1.5.1'
 
@@ -1565,7 +1565,12 @@ class Model:
                     continue
                 for index, left in enumerate(releases):
                     for right in releases[index + 1:]:
-                        if dr_pair_compatible(left, right):
+                        copied_rip = bool(
+                            release_log_fingerprints(left) and
+                            release_log_fingerprints(left) == release_log_fingerprints(right) and
+                            exact_audio_duplicate_signature(left) == exact_audio_duplicate_signature(right)
+                        )
+                        if dr_pair_compatible(left, right) and not copied_rip:
                             dr_candidate_ids.add(left.rid)
                             dr_candidate_ids.add(right.rid)
 
@@ -2447,8 +2452,7 @@ class Model:
             component_count=len(components_list),
             component_sizes=sorted((len(component) for component in components_list), reverse=True),
             seed_release_count=best_obj[0],
-            seed_media_penalty=best_obj[1],
-            seed_file_count=best_obj[2],
+            seed_objective=list(best_obj[:-1]),
         )
 
         for component_index, component in enumerate(components_list, 1):
@@ -2467,9 +2471,23 @@ class Model:
                         (rid for rid in component if self.releases[rid].keys & uncovered),
                         key=lambda rid: (
                             -len(self.releases[rid].keys & uncovered),
-                            self.media_rank(self.releases[rid].media_type),
-                            len(self.releases[rid].tracks),
-                            -(float(self.releases[rid].logchecker_score) if self.releases[rid].logchecker_score is not None else 0.0),
+                            (
+                                -self.dr_priority_value(rid)
+                                if self.dr_priority_mode else
+                                len(self.releases[rid].tracks)
+                            ),
+                            (
+                                len(self.releases[rid].tracks)
+                                if self.dr_priority_mode else
+                                self.media_rank(self.releases[rid].media_type)
+                            ),
+                            (
+                                self.media_rank(self.releases[rid].media_type)
+                                if self.dr_priority_mode else
+                                -self.log_tiebreak_value(rid)
+                            ),
+                            -self.log_tiebreak_value(rid) if self.dr_priority_mode else self.copied_duplicate_penalty(rid),
+                            self.copied_duplicate_penalty(rid) if self.dr_priority_mode else -self.dr_tiebreak_value(rid),
                             self.releases[rid].date,
                             self.releases[rid].name,
                             rid,
@@ -2493,8 +2511,7 @@ class Model:
                 release_count=len(component),
                 identity_count=len(component_keys),
                 seed_release_count=component_best_obj[0],
-                seed_media_penalty=component_best_obj[1],
-                seed_file_count=component_best_obj[2],
+                seed_objective=list(component_best_obj[:-1]),
                 release_ids=sorted(component),
             )
 
@@ -2517,23 +2534,6 @@ class Model:
                     exact_stats['pruned_size'] += 1
                     return
 
-                state = frozenset(missing)
-                partial = (
-                    len(selected),
-                    sum(self.media_rank(self.releases[rid].media_type) for rid in selected),
-                    sum(len(self.releases[rid].tracks) for rid in selected),
-                    -sum(
-                        float(self.releases[rid].logchecker_score)
-                        for rid in selected
-                        if self.releases[rid].logchecker_score is not None
-                    ),
-                )
-                previous = memo.get(state)
-                if previous is not None and previous <= partial:
-                    exact_stats['pruned_memo'] += 1
-                    return
-                memo[state] = partial
-
                 available_candidates = component - selected
                 max_new = max(
                     (len(self.releases[rid].keys & missing) for rid in available_candidates),
@@ -2555,9 +2555,23 @@ class Model:
                     (self.cover[key] & component) - selected,
                     key=lambda rid: (
                         -len(self.releases[rid].keys & missing),
-                        self.media_rank(self.releases[rid].media_type),
-                        len(self.releases[rid].tracks),
-                        -(float(self.releases[rid].logchecker_score) if self.releases[rid].logchecker_score is not None else 0.0),
+                        (
+                            -self.dr_priority_value(rid)
+                            if self.dr_priority_mode else
+                            len(self.releases[rid].tracks)
+                        ),
+                        (
+                            len(self.releases[rid].tracks)
+                            if self.dr_priority_mode else
+                            self.media_rank(self.releases[rid].media_type)
+                        ),
+                        (
+                            self.media_rank(self.releases[rid].media_type)
+                            if self.dr_priority_mode else
+                            -self.log_tiebreak_value(rid)
+                        ),
+                        -self.log_tiebreak_value(rid) if self.dr_priority_mode else self.copied_duplicate_penalty(rid),
+                        self.copied_duplicate_penalty(rid) if self.dr_priority_mode else -self.dr_tiebreak_value(rid),
                         self.releases[rid].date,
                         self.releases[rid].name,
                         rid,
@@ -2578,8 +2592,7 @@ class Model:
                 release_count=len(component),
                 identity_count=len(component_keys),
                 best_release_count=component_best_obj[0],
-                best_media_penalty=component_best_obj[1],
-                best_file_count=component_best_obj[2],
+                best_objective=list(component_best_obj[:-1]),
                 selected_release_ids=sorted(component_best),
                 nodes=component_nodes,
                 solutions=component_solutions,
@@ -3015,6 +3028,8 @@ class App(tk.Tk):
             f'Barcode: {release.barcode or "-"}\n'
             f'Source container: {release.source_container or "-"}\n'
             f'Media: {release.media_type} ({release.media_evidence})\n'
+            f'Learned policy: {LEARNED_POLICY_VERSION}\n'
+            f'DR priority mode: {"ON" if self.dr_priority_var.get() else "OFF"}\n'
             f'Dynamic range: {dynamic_range_display(release)}\n'
             f'Logchecker score: {logchecker_display(release)}\n'
             f'Kind: {release.kind}\n'
