@@ -1,13 +1,13 @@
 # Coverage Atlas
 
 **Status:** Under construction ⚠️  
-**Current version:** 0.1.14
+**Current version:** 0.1.15
 
 Coverage Atlas analyzes a music collection as a global coverage problem: preserve every meaningful track/version while finding the smallest sensible set of releases needed to provide that content.
 
 ## Download
 
-[Update Coverage Atlas 0.1.14.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/15c967e2578e54225805b06210e3a13015a77893/Coverage%20Atlas%200.1.14.pyw)
+[Update Coverage Atlas 0.1.15.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/3417d60486b3d00749a109e2076aa9388970328c/Coverage%20Atlas%200.1.15.pyw)
 
 ## Principles
 
@@ -60,6 +60,9 @@ Coverage Atlas analyzes a music collection as a global coverage problem: preserv
 - Excluding the last provider of a track/version no longer makes that content disappear from the universe; lost content is explicitly reported.
 - MusicBrainz Recording IDs and ISRCs are conservatively reconciled when artist, title/version, and duration evidence agree.
 - Large collections are solved exactly by mandatory-release propagation and independent coverage components instead of a global release-count cutoff.
+- PMF/TT-style dynamic-range measurement is integrated directly into analysis: per-track DR and complete-release DR are calculated and cached locally.
+- DR analysis runs up to four files in parallel and uses the existing local FFmpeg decoder when available; Coverage Atlas does not install FFmpeg automatically.
+- Main Coverage Atlas displays DR but does not yet use DR as an optimization preference; that behavior is intentionally left to Reasoning Lab training first.
 
 ## Data isolation
 
@@ -75,6 +78,7 @@ Diagnostic logs are stored in:
 
 - `ligh7s/hey-bro-check-log` 1.3.2 is vendored from commit `d3192ad2764f2682cffce4db2abc419f8ac68c69` under Apache-2.0. The complete upstream license is embedded in each app source.
 - Coverage Atlas adapts the checker for single-file use by replacing its external encoding dependency, disabling markup output, and materializing its bundled resources locally at runtime.
+- The integrated DR implementation follows the public PMF/TT-DR method and the MIT-licensed MacinMeter Candidate V1 analysis profile for closer compatibility with current DR Meter behavior; the proprietary DROffline executable is not bundled or executed.
 
 ## Requirements
 
@@ -82,6 +86,7 @@ Diagnostic logs are stored in:
 - Python with Tkinter
 - `mutagen` is installed automatically when missing
 - `ligh7s/hey-bro-check-log` 1.3.2 is bundled inside the `.pyw`; no checker download or installation is required
+- FFmpeg is used only as the local audio decoder for DR measurement when available; it is not installed automatically by Coverage Atlas
 
 ## Safety
 
@@ -91,9 +96,9 @@ Coverage Atlas analyzes the collection and produces recommendations. It does not
 ## Reasoning Lab addon
 
 **Status:** Under construction ⚠️  
-**Version:** 0.1.19
+**Version:** 0.1.20
 
-[Update Coverage Atlas Reasoning Lab 0.1.19.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/cf741552829b536781339fe4e35b8fbb984fa2d1/Coverage%20Atlas%20Reasoning%20Lab%200.1.19.pyw)
+[Update Coverage Atlas Reasoning Lab 0.1.20.pyw](https://raw.githubusercontent.com/karpuzikov/coverage-atlas/04fa9d5c8efd7a670a681135f6907a25a39246fe/Coverage%20Atlas%20Reasoning%20Lab%200.1.20.pyw)
 
 The Reasoning Lab is an isolated pairwise-preference trainer for learning human release-selection rules before adding them to Coverage Atlas.
 
@@ -119,6 +124,7 @@ The Reasoning Lab is an isolated pairwise-preference trainer for learning human 
 - If the embedded checker rejects a clearly supported XLD log, reload the bundled checker once and show the exact parser error instead of a generic `unrecognized` label.
 - `hey-bro-check-log` source and required EAC/XLD resources are merged into the apps; scanning never downloads or installs the checker.
 - Reasoning Lab compares complete releases, not individual discs. `CD1` / `CD2` / `Disc 1` / `Disc 2` inside the same physical release folder are merged into one release choice.
+- Reasoning Lab displays per-track and whole-release DR values and exposes `left_dynamic_range`, `right_dynamic_range`, `left_dynamic_range_db`, `right_dynamic_range_db`, and `dynamic_range_comparable` to future selection rules.
 - Newer legitimate EAC 1.x and XLD builds are accepted even when they postdate hey-bro-check-log's original hard-coded version table; they are registered dynamically for checksum/version comparisons.
 - Disc-specific releases such as `CD1` use the matching `CD1.log` when a multi-disc folder contains separate logs for each disc.
 - Training workflow is iterative: collect answers -> export snapshot -> derive selection rules -> rerun the same folder -> generate only unresolved cases for the next round.
